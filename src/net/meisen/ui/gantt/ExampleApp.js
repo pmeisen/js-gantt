@@ -13,7 +13,7 @@ requirejs.config({
 });
 
 // now start the entry-point
-require(['jquery', 'net/meisen/ui/gantt/GanttChart'], function($, Layouter) {
+require(['jquery', 'net/meisen/ui/gantt/GanttChart'], function($) {
   
 var ganttData = [
     {
@@ -15017,7 +15017,7 @@ var ganttData = [
 ];
   
   
-			chart = $("#ganttChart").ganttView({data: ganttData, granularity: 'days'});
+			chart = $("#ganttChart").ganttChart({data: ganttData, granularity: 'days'});
             chart.resize(1000, 500);
 
             $('<div style="padding: 0.4em; margin: 1em; border: solid 1px #000;">set granularity to days</div>').prependTo(document.body).click(function() {

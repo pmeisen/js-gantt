@@ -1,5 +1,6 @@
 define(['jquery', 'date'], function ($, Date) {
-  $.fn.ganttView = function () {
+  
+  $.fn.ganttChart = function () {
     var args = Array.prototype.slice.call(arguments);
 
     if (args.length == 1 && typeof(args[0]) == "object") {
