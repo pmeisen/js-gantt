@@ -1,0 +1,9 @@
+.placeholder {
+  text-align: center;
+  color: white;
+  font-size: 60px;
+}
+
+.closeButton {
+  background: gray;
+}
