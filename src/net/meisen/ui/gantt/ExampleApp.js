@@ -15,18 +15,17 @@ requirejs.config({
 // now start the entry-point
 require(['jquery', 'net/meisen/ui/gantt/GanttChart'], function($) {
   
-var ganttData = [
-    {
-        id: 1,
-        name: "Calls",
-        labelBuilder: function(item, opts) {
-            return "";
-        },
-        titleBuilder: function(item) {
-            return item.caller +' (from '+ item.start +' to '+ item.end +')';
-        },
+  var ganttData = [{
+    id: 1,
+    name: "Calls",
+    labelBuilder: function(item, opts) {
+        return "";
+    },
+    titleBuilder: function(item) {
+        return item.caller +' (from '+ item.start +' to '+ item.end +')';
+    },
 
-        intervals: [
+    intervals: [
                      {
                        caller:"Jana",
                        start:new Date("09.05.2013 19:19:04"),
@@ -15012,21 +15011,19 @@ var ganttData = [
                        callergender:"Male",
                        recipientgender:"Male"
                      }
-                   ]
-    }
-];
+    ]
+  }];
   
-  
-			chart = $("#ganttChart").ganttChart({data: ganttData, granularity: 'days'});
-            chart.resize(1000, 500);
+  chart = $("#ganttChart").ganttChart({data: ganttData, granularity: 'days'});
+  chart.resize(1000, 500);
 
-            $('<div style="padding: 0.4em; margin: 1em; border: solid 1px #000;">set granularity to days</div>').prependTo(document.body).click(function() {
-                chart.changeGranularity('days');
-            });
-            $('<div style="padding: 0.4em; margin: 1em; border: solid 1px #000;">set granularity to hours</div>').prependTo(document.body).click(function() {
-                chart.changeGranularity('hours');
-            });
-            $('<div style="padding: 0.4em; margin: 1em; border: solid 1px #000;">set granularity to minutes</div>').prependTo(document.body).click(function() {
-                chart.changeGranularity('minutes');
-            });
+  $('<div style="padding: 0.4em; margin: 1em; border: solid 1px #000;">set granularity to days</div>').prependTo(document.body).click(function() {
+      chart.changeGranularity('days');
+  });
+  $('<div style="padding: 0.4em; margin: 1em; border: solid 1px #000;">set granularity to hours</div>').prependTo(document.body).click(function() {
+      chart.changeGranularity('hours');
+  });
+  $('<div style="padding: 0.4em; margin: 1em; border: solid 1px #000;">set granularity to minutes</div>').prependTo(document.body).click(function() {
+      chart.changeGranularity('minutes');
+  });
 });

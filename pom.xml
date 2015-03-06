@@ -13,6 +13,12 @@
   <!-- the projects dependencies -->
   <dependencies>
     <dependency>
+      <groupId>net.meisen.ui</groupId>
+      <artifactId>net-meisen-ui-js-svglibrary</artifactId>
+      <version>TRUNK-SNAPSHOT</version>
+    </dependency>
+  
+    <dependency>
       <groupId>org.jquery</groupId>
       <artifactId>jquery</artifactId>
       <version>1.9.1</version>

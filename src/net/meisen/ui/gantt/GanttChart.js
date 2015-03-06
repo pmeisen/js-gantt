@@ -1,4 +1,4 @@
-define(['jquery', 'date'], function ($, Date) {
+define(['jquery', 'date', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/ui/svglibrary/LoadingCircles'], function ($, Date, svglib, loadingImage) {
   
   $.fn.ganttChart = function () {
     var args = Array.prototype.slice.call(arguments);
@@ -9,11 +9,14 @@ define(['jquery', 'date'], function ($, Date) {
 
     // work around
     this.resize = function(width, height) {
-      $('.ganttview').css({'width': width +'px', 'height': height +'px'});
+      var css = { 'width': width + 'px', 'height': height + 'px' };
+      this.css(css);
+      this.children('.ganttloading').css('width', this.width());
+      this.children('.ganttloading').css('height', this.height());
     };
 
     this.changeGranularity = function(granularity, forceRedraw) {
-      $('.ganttview').trigger('gantt-granularity-change', {g:granularity, f:forceRedraw});
+      this.children('.ganttview').trigger('gantt-granularity-change', { g:granularity, f:forceRedraw });
     };
 
     return this;
@@ -44,28 +47,36 @@ define(['jquery', 'date'], function ($, Date) {
     function build() {
       els.each(function () {
         var container = $(this);
-        container.addClass('ganttview');
+        container.css('overflow', 'auto');
+        container.css('position', 'relative');
 
-        var div = $('<div></div>');
-        div
-          .css({"width": opts.chartWidth +'px'})
-          .appendTo(container)
-        ;
+        var view = $('<div></div>');
+        view.addClass('ganttview');
+        view.css('position', 'absolute');
+        view.appendTo(container);
 
-        var indicator = $('<img id="gantt-loading-indicator" src="http://media.giphy.com/media/9xx7IW31zndzW/giphy.gif" width="20" height="20" />');
-        container.append(indicator);
+        var indicator = $('<div></div>');
+        indicator.addClass('ganttloading');
+        indicator.css('backgroundRepeat', 'no-repeat');
+        indicator.css('backgroundPosition', 'center center');
+        indicator.css('backgroundColor', '#CCCCCC');
+        indicator.css('position', 'absolute');
+        svglib.setBackgroundImage(indicator, loadingImage);
+        indicator.appendTo(container);
 
-        $(div)
-          .on('gantt-show-indicator', function() {
-            indicator.show();
-          })
-          .on('gantt-hide-indicator', function() {
-            indicator.hide();
-          });
+        $(view).on('gantt-show-indicator', function() {
+          container.css('overflow', 'hidden');
+          view.hide();
+          indicator.show();
+        }).on('gantt-hide-indicator', function() {
+          container.css('overflow', 'auto');
+          view.show();
+          indicator.hide();
+        });
 
         setMinMax(opts.data);
 
-        new Chart(div, opts).render();
+        new Chart(view, opts).render();
       });
     }
 
@@ -97,6 +108,7 @@ define(['jquery', 'date'], function ($, Date) {
     var rowContainer;
 
     function renderData() {
+      
       // clean up
       div.empty();
 
@@ -104,6 +116,7 @@ define(['jquery', 'date'], function ($, Date) {
       div.trigger('gantt-show-indicator');
 
       setTimeout(function () {
+        
         // data "rows"
         for (var r in opts.data) {
           var row = opts.data[r];
@@ -175,7 +188,7 @@ define(['jquery', 'date'], function ($, Date) {
             var title = row.titleBuilder ? row.titleBuilder(item, opts) : interval;
 
             // appending item-block to row
-            $('<div class="item-block" title="' + title + '"><div class="item-text">' + label + '</div></div>')
+            $('<div class="item-block" data-title="' + title + '"><div class="item-text">' + label + '</div></div>')
               .css({
                 'width': (opts.cellWidth * size) - 2 + 'px',
                 'left': (opts.cellWidth * offset) + 1 + 'px'
@@ -346,6 +359,7 @@ define(['jquery', 'date'], function ($, Date) {
 
     var scalingFactor = 1;
     if (first.start instanceof Date) {
+      
       // scale minutes to millis
       scalingFactor = (60 * 1000);
     }
