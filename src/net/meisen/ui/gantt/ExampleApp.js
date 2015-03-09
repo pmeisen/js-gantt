@@ -13,13 +13,13 @@ requirejs.config({
 });
 
 // now start the entry-point
-require(['jquery', 'net/meisen/ui/gantt/GanttChart'], function($, GanttChart) {
+require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/GanttChart'], function($, datelib) {
   var chartFixedData = $("#chartFixedData").ganttChart({
       data: {
         names: ['start', 'end', 'value', 'number'],
         records: [
-          [ GanttChart.date(null, null, null, 0, 0, 0), GanttChart.date(null, null, null, 2, 0, 0), '2 Hours', 120 ],
-          [ GanttChart.date(null, null, null, 0, 0, 0), GanttChart.date(null, null, null, 23, 59, 0), 'All Day', 1439 ]
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 2, 0, 0), '2 Hours', 120 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 23, 59, 0), 'All Day', 1439 ]
         ]
       }
     });
@@ -27,7 +27,7 @@ require(['jquery', 'net/meisen/ui/gantt/GanttChart'], function($, GanttChart) {
 
   var chartLoadedData = $("#chartLoadedData").ganttChart({
       data: {
-        url: 'http://localhost:10000/data?type=file&file=test/sample.csv&separator=;&limit=10000',
+        url: 'http://localhost:10000/data?type=file&file=server/sample.csv&separator=;&limit=10000',
         postProcessor: function(data) {
           return { names: data.names, records: data.data };
         },
@@ -55,7 +55,7 @@ require(['jquery', 'net/meisen/ui/gantt/GanttChart'], function($, GanttChart) {
   
   var chartEmptyData = $("#chartEmptyData").ganttChart({
       data: {
-        url: 'http://localhost:10000/data?type=file&file=test/sample.csv&separator=;&limit=0',
+        url: 'http://localhost:10000/data?type=file&file=server/sample.csv&separator=;&limit=0',
         postProcessor: function(data) {
           return { names: data.names, records: data.data };
         }

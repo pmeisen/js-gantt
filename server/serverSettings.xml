@@ -19,7 +19,7 @@
       <docroot urlmatcher="/${javascript.server.testtool.dir}/*">${javascript.tmp.testtoolDir}</docroot>
       <docroot urlmatcher="/${javascript.server.runtest}">${javascript.tmp.testtoolDir}/index.html</docroot>
       
-      <servlet urlmatcher="/data" reloadfile="true" scriptfile="${test.srcdir}/data.js">
+      <servlet urlmatcher="/data" reloadfile="true" scriptfile="server/data.js">
         net.meisen.general.server.http.listener.servlets.ScriptedServlet
       </servlet>
     </e:extension>

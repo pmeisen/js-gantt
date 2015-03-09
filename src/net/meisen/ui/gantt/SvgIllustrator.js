@@ -12,7 +12,10 @@ define(['jquery'], function ($) {
   SvgIllustrator.prototype = {
     panel: null,
     defaultCfg: {
-      
+      theme: {
+        fontFamily: '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif',
+        fontSize: '12px'
+      }
     },
     
     init: function(panel, cfg) {
@@ -21,8 +24,9 @@ define(['jquery'], function ($) {
       this.panel = panel;
       this.panel.empty();
       
-      // <svg version="1.1" style="font-family:&quot;Lucida Grande&quot;, &quot;Lucida Sans Unicode&quot;, Arial, Helvetica, sans-serif;font-size:12px;" xmlns="http://www.w3.org/2000/svg" width="1327" height="400"></svg>
-      this.svg = $('<svg version="1.1"></svg>');
+      this.svg = $('<svg version="1.1" xmlns="http://www.w3.org/2000/svg"></svg>');
+      this.svg.css('fontFamily', this.opts.theme.fontFamily);
+      this.svg.css('fontSize', this.opts.theme.fontSize);
       this.svg.appendTo(this.panel);
       
       // observe the resize event
