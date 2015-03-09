@@ -4,7 +4,7 @@
  *  - org.apache.http.HttpStatus.SC_OK
  *  - org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED
  */
-var status = org.apache.http.HttpStatus.SC_OK;
+var status = Packages.org.apache.http.HttpStatus.SC_OK;
 
 var pad = function(n){
   return n < 10 ? '0' + n : n
@@ -35,7 +35,7 @@ var readFile = function(file, encoding, separator, limit) {
       for (var i = 0; i < data.length; i++) {
         var value;
         
-        var date = net.meisen.general.genmisc.types.Dates.isDate(data[i], net.meisen.general.genmisc.types.Dates.GENERAL_TIMEZONE);
+        var date = Packages.net.meisen.general.genmisc.types.Dates.isDate(data[i], Packages.net.meisen.general.genmisc.types.Dates.GENERAL_TIMEZONE);
         if (date != null) {
           value = date;
         } else {
@@ -115,7 +115,7 @@ var transformToJson = function(object) {
   return json;
 };
 
-var parameters = net.meisen.general.server.http.listener.util.RequestHandlingUtilities.parseParameter(request);
+var parameters = Packages.net.meisen.general.server.http.listener.util.RequestHandlingUtilities.parseParameter(request);
 
 // determine the data to be send
 var type = parameters.get('type');
@@ -132,7 +132,7 @@ if ('file'.equals(type)) {
 
   result = readFile(file, encoding, separator, limit);
 } else if ('fail'.equals(type)) {
-  status = org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+  status = Packages.org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 } else {
   var names = ['Start', 'End', 'Integer', 'String'];
   var data = [];
@@ -143,7 +143,7 @@ if ('file'.equals(type)) {
 }
 
 // create the answer
-var entity = new org.apache.http.entity.StringEntity(transformToJson(result), org.apache.http.entity.ContentType.create("text/html", "UTF-8"));
+var entity = new Packages.org.apache.http.entity.StringEntity(transformToJson(result), Packages.org.apache.http.entity.ContentType.create("text/html", "UTF-8"));
 entity.setContentEncoding('UTF-8');
 response.setEntity(entity);
 
