@@ -1,383 +1,454 @@
-define(['jquery', 'date', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/ui/svglibrary/LoadingCircles'], function ($, Date, svglib, loadingImage) {
+define(['jquery', 'net/meisen/ui/gantt/SvgIllustrator', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/ui/svglibrary/LoadingCircles'], function ($, SvgIllustrator, svglib, loadingImage) {
+    
+  /*
+   * Hidden utilities, only used within the GanttChart.
+   */
+  var utilities = {
+    generateMap: function(mapper, names) {
+      var group = this.validateArray(mapper.group);
+      var label = this.validateArray(mapper.label);
+      var tooltip = this.validateArray(mapper.tooltip);
+      
+      var mappedGroup = this.createArray(group.length, -1);
+      var mappedLabel = this.createArray(label.length, -1);
+      var mappedTooltip = this.createArray(tooltip.length, -1);
+      
+      // create the initial map
+      var map = { start: -1, end: -1, group: mappedGroup, label: mappedLabel, tooltip: mappedTooltip };
+      
+      // get the arrays to look through
+      var arrays = [
+        [group, mappedGroup], 
+        [label, mappedLabel], 
+        [tooltip, mappedTooltip]
+      ];
+      
+      // look-up the names and the defined maps
+      $.each(names, function(idx, val) {
+        if (val == mapper.startname) {
+          map.start = idx;
+        } else if (val == mapper.endname) {
+          map.end = idx;
+        } 
+        
+        $.each(arrays, function(nr, pair) {
+          var arrayIdx = $.inArray(val, pair[0]);
+          if (arrayIdx != -1) {
+            pair[1][arrayIdx] = idx;
+          }
+        });
+      });
+      
+      // validate the result, no -1 present anymore
+      var validateValue = function(value) {
+        if (!$.isNumeric(value) || parseInt(value) !== value || value < 0) {
+          throw Error('Mapping failed (reason: value="' + value + '", map="' + JSON.stringify(map) + '", names="' + JSON.stringify(names) + '")');
+        }
+      }
+      $.each(map, function(key, value) {
+        if ($.isArray(value)) {
+          $.each(value, function(idx, val) {
+            validateValue(val);
+          });
+        } else {
+          validateValue(value);
+        }
+      });
+      
+      return map;
+    },
+    
+    createArray: function(length, value) {
+      var res = [];
+      
+      for (var i = 0; i < length; i++) {
+        res[i] = value;
+      }
+      
+      return res;
+    },
+    
+    validateArray: function(array) {
+      var res;
+      
+      if (!$.isArray(array)) {
+        res = [];
+        res.push(array);
+      } else {
+        res = array;
+      }
+      
+      return res;
+    },
+    
+    initTimeaxis: function(timeaxis, map, records) {
+      var start = timeaxis.start;
+      var end = timeaxis.end;
+      
+      var needStart = start == null || typeof(start) == 'undefined';
+      var needEnd = end == null || typeof(end) == 'undefined';
+
+      if (needStart || needEnd) {
+      
+        // get the needed values
+        if (records == null || typeof(records) == 'undefined' || !$.isArray(records) || records.length == 0 ||
+          map == null || typeof(map) == 'undefined' || map.start == -1 || map.end == -1) {
+          start = needStart ? GanttChart.date() : start;
+          end = needEnd ? GanttChart.date(null, null, null, 23, 59, 0) : end;
+        } else {
+          var max = -1;
+          var min = -1;
+          
+          $.each(records, function(idx, val) {
+            var s = utilities.toDate(val[map.start]).getTime();
+            var e = utilities.toDate(val[map.end]).getTime();
+            
+            if (needStart && $.isNumeric(s)) {
+              min = min == -1 || min > s ? s : min;
+            }
+            
+            if (needEnd && $.isNumeric(e)) {
+              max = max == -1 || max < e ? e : max;
+            }
+          });
+          
+          // get the start if needed
+          if (needStart) {
+            if (min == -1 && max == -1) {
+              start = GanttChart.date();
+            } else if (min == -1) {
+              start = new Date(max);
+              start = GanttChart.date(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDay());
+            } else {
+              start = new Date(min);
+            }
+          }
+          
+          // get the end if needed
+          if (needEnd) {
+            if (min == -1 && max == -1) {
+              end = GanttChart.date(null, null, null, 23, 59, 0);
+            } else if (max == -1) {
+              end = new Date(min);
+              end = GanttChart.date(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDay(), 23, 59, 0);
+            } else {
+              end = new Date(max);
+            }
+          }
+        }
+        
+        // set the new values
+        return $.extend(true, timeaxis, { start: start, end: end });
+      } else {
+        return timeaxis;
+      }
+    },
+    
+    toDate: function(value) {
+      
+      // check null
+      if (value == null || typeof(value) == 'undefined') {
+        return null;
+      } 
+      
+      // check if we have a Date
+      if (value instanceof Date) {
+        return value;
+      } 
+      
+      // check ISO8601 
+      var regex = new RegExp('^([\\d]{4})\\-([\\d]{2})\\-([\\d]{2})T([\\d]{2}):([\\d]{2}):([\\d]{2})(\\.([\\d]{3}))?Z$');
+      var matches = regex.exec(date);
+      if (matches != null) {
+
+        return new Date(Date.UTC(
+          parseInt(matches[1], 10),
+          parseInt(matches[2], 10) - 1,
+          parseInt(matches[3], 10),
+          parseInt(matches[4], 10),
+          parseInt(matches[5], 10),
+          parseInt(matches[6], 10)
+        ));
+      }
+      
+      // fallback
+      return null;
+    }
+  };
   
+  /*
+   * Default constructor...
+   */
+  GanttChart = function() {
+  };
+  
+  /*
+   * Static function useful to generate UTC dates. The parameters are optional,
+   * i.e. can be null or undefined. If not specified the date-information will be
+   * set to today, whereby the time-information will be set to 0 if not specified.
+   */
+  GanttChart.date = function(y, m, d, h, mi, s) {
+    var now = new Date();
+    
+    y = typeof(y) == 'undefined' || y == null ? now.getFullYear() : y;
+    m = typeof(m) == 'undefined' || m == null ? now.getMonth() : m - 1;
+    d = typeof(d) == 'undefined' || d == null ? now.getDay() : d;
+    
+    h = typeof(h) == 'undefined' || h == null ? 0 : h;
+    mi = typeof(mi) == 'undefined' || mi == null ? 0 : mi;
+    s = typeof(s) == 'undefined' || s == null ? 0 : s;
+    
+    return new Date(Date.UTC(y, m, d, h, mi, s));
+  };
+  
+  /*
+   * Extended prototype
+   */
+  GanttChart.prototype = {
+    el: null,
+    masking: null,
+    
+    defaultCfg: {
+      
+      theme: {
+        loadingBackgroundColor: '#CCCCCC',
+        loadingBackgroundPosition: 'center center',
+        loadingBackgroundRepeat: 'no-repeat',
+
+        errorBackgroundColor: '#A30B1D'
+      },
+      
+      illustrator: {
+        instance: new SvgIllustrator(),
+        config: {}
+      },
+      
+      data: {
+        url: null,
+        postProcessor: function(data) {
+          if (!$.isArray(data.names) || !$.isArray(data.records)) {
+            return null;
+          } else {
+            return data;
+          }
+        },
+        mapper: {
+          startname: 'start',
+          endname: 'end',
+          group: [],
+          label: [],
+          tooltip: []
+        },
+        names: [],
+        records: [],
+        timeaxis: {
+          start: null,
+          end: null,
+          granularity: 'days'
+        }
+      }
+    },
+    
+    init: function(selector, cfg) {
+      this.opts = $.extend(true, {}, this.defaultCfg, cfg);
+            
+      this.container = selector instanceof jQuery ? selector : $(selector);
+      this.container.css('overflow', 'auto');
+      this.container.css('position', 'relative');
+
+      this.view = $('<div></div>');
+      this.view.addClass('ganttview');
+      this.view.css('position', 'absolute');
+      this.view.css('overflow', 'hidden');
+      this.view.appendTo(this.container);
+
+      this.indicator = $('<div></div>');
+      this.indicator.addClass('ganttloading');
+      this.indicator.css('backgroundRepeat', this.opts.theme.loadingBackgroundRepeat);
+      this.indicator.css('backgroundPosition', this.opts.theme.loadingBackgroundPosition);
+      this.indicator.css('backgroundColor', this.opts.theme.loadingBackgroundColor);
+      this.indicator.css('position', 'absolute');
+      svglib.setBackgroundImage(this.indicator, loadingImage);
+      this.indicator.appendTo(this.container);
+      
+      this.error = $('<div></div>');
+      this.error.addClass('gantterror');
+      this.error.css('backgroundColor', this.opts.theme.errorBackgroundColor);
+      this.error.css('position', 'absolute');
+      this.error.appendTo(this.container);
+
+      var _ref = this;
+      $(this.view).on('load', function() {
+        _ref.mask();
+      }).on('renderStart', function() {
+        _ref.mask();
+      }).on('renderEnd', function() {
+        _ref.unmask();
+      }).on('error', function(event, data) {
+        _ref.showError(data);
+      }).on('changeTimeaxis', function(event, data) {
+        _ref.changeTimeaxis(data.start, data.end, data.granularity, data.force);
+      })
+      
+      // initialize the illustrator
+      this.opts.illustrator.instance.init(this.view, this.opts.illustrator.config);
+      
+      this.load();
+    },
+    
+    mask: function() {
+      if (this.masking != 'loading') {
+        this.masking = 'loading';   
+        
+        this.container.css('overflow', 'hidden');
+        this.view.hide();
+        this.error.hide();
+        this.indicator.show();
+      }
+    },
+    
+    unmask: function() {
+      if (this.masking != null) {
+        this.container.css('overflow', 'auto');
+        this.view.show();
+        this.indicator.hide();
+        this.error.hide();
+        
+        this.masking = null;        
+      }
+    },
+
+    resize: function(width, height) {
+      this.container.css('width', width);
+      this.container.css('height', height);
+    
+      var innerWidth = this.container.width();
+      var innerHeight = this.container.height();
+      this.indicator.css('width', innerWidth);
+      this.indicator.css('height', innerHeight);
+      this.error.css('width', innerWidth);
+      this.error.css('height', innerHeight);
+      
+      // fire the resize event
+      this.view.trigger('resize', { width: innerWidth, height: innerHeight });
+    },
+
+    changeTimeaxis: function(start, end, granularity, force) {
+      if (force || (typeof(granularity) != 'undefined' && this.opts.timeaxis.granularity != granularity)
+                || (typeof(start) != 'undefined' && this.opts.timeaxis.start != start)
+                || (typeof(end) != 'undefined' && this.opts.timeaxis.end != end)) {
+
+        this.opts.timeaxis.start = typeof(start) != 'undefined' ? start : this.opts.timeaxis.start;
+        this.opts.timeaxis.end = typeof(end) != 'undefined' ? end : this.opts.timeaxis.end;
+        this.opts.timeaxis.granularity = typeof(granularity) != 'undefined' ? granularity : this.opts.timeaxis.granularity;
+        
+        this.render();
+      }
+    },
+    
+    load: function() {
+      this.view.trigger('load');
+      
+      if (typeof(this.opts.data.url) == 'undefined' || this.opts.data.url == null) {
+        this.render();
+      } else {
+        var _ref = this;
+        $.getJSON(this.opts.data.url).done(function(data) {
+          var postProcessedData = $.isFunction(_ref.opts.data.postProcessor) ? _ref.opts.data.postProcessor(data) : data;
+          if (postProcessedData == null) {
+            _ref.view.trigger('error', { error: null, message: 'Postprocessing of data failed', nr: '1001'});
+          } else {
+            _ref.render(postProcessedData);
+          }
+        }).fail(function(error) {
+          _ref.view.trigger('error', { error: error, message: 'Unable to load data', nr: '1000'});
+        });
+      }
+    },
+    
+    render: function(loaded) {
+      
+      // rendering will be started
+      this.view.trigger('renderStart');
+      
+      // combine the loaded data and the data
+      var data = $.extend(true, {}, this.opts.data, loaded);
+      
+      // make sure we have a valid time-axis
+      var map;
+      try {
+        map = utilities.generateMap(data.mapper, data.names);
+        utilities.initTimeaxis(data.timeaxis, map, data.records);
+      } catch (error) {
+        this.view.trigger('error', { error: error, message: 'Failed to initialize rendering', nr: '1002'});
+        return;
+      }
+      
+      // use a time-out to make sure that the mask is shown
+      var _ref = this;
+      window.setTimeout(function () {
+        
+        try {
+          _ref.opts.illustrator.instance.draw(data.timeaxis, data.records, map);
+        
+          // we are done with the rendering so trigger the event
+          _ref.view.trigger('renderEnd');
+        } catch (error) {
+          _ref.view.trigger('error', { error: error, message: 'Failed to draw', nr: '1003'});
+        }
+      }, 50);
+    },
+    
+    showError: function(data) {
+      console.error(data);
+      
+      if (this.masking != 'error') {
+        this.masking = 'error';      
+        
+        this.container.css('overflow', 'hidden');
+        this.view.hide();
+        this.indicator.hide();
+        this.error.show();
+      }
+    }
+  };
+  
+  /*
+   * Add the plug-in functionality for jQuery
+   */
   $.fn.ganttChart = function () {
+    var charts = [];
+
+    // get the arguments
     var args = Array.prototype.slice.call(arguments);
 
-    if (args.length == 1 && typeof(args[0]) == "object") {
-      build.call(this, args[0]);
-    }
+    // get the arguments
+    var config = args.length == 1 && typeof(args[0]) == 'object' ? args[0] : null;
 
-    // work around
+    // create a chart for each element
+    this.each(function () {
+      var chart = new GanttChart();
+      chart.init($(this), config);
+      
+      charts.push(chart);
+    });   
+        
+    // make the resize function available
     this.resize = function(width, height) {
-      var css = { 'width': width + 'px', 'height': height + 'px' };
-      this.css(css);
-      this.children('.ganttloading').css('width', this.width());
-      this.children('.ganttloading').css('height', this.height());
+      $.each(charts, function() {
+        this.resize(width, height);
+      });
     };
 
-    this.changeGranularity = function(granularity, forceRedraw) {
-      this.children('.ganttview').trigger('gantt-granularity-change', { g:granularity, f:forceRedraw });
+    // make the changeGranularity function available   
+    this.changeTimeaxis = function(start, end, granularity, force) {
+      $.each(charts, function() {
+        this.changeTimeaxis(start, end, granularity, force);
+      });
     };
 
     return this;
   };
-
-  function build(config) {
-    var els = this;
-    var defaults = {
-      cellWidth: 21,
-      cellHeight: 31,
-      rowHeaderWidth: 100,
-      chartWidth: 800,
-      granularity: 'days',
-      recursionDepth: Number.MAX_VALUE
-    };
-
-    var opts = $.extend(true, defaults, config);
-
-    if (opts.data) {
-      build();
-    } else if (opts.dataUrl) {
-      $.getJSON(opts.dataUrl, function (data) {
-        opts.data = data;
-        build();
-      });
-    }
-
-    function build() {
-      els.each(function () {
-        var container = $(this);
-        container.css('overflow', 'auto');
-        container.css('position', 'relative');
-
-        var view = $('<div></div>');
-        view.addClass('ganttview');
-        view.css('position', 'absolute');
-        view.appendTo(container);
-
-        var indicator = $('<div></div>');
-        indicator.addClass('ganttloading');
-        indicator.css('backgroundRepeat', 'no-repeat');
-        indicator.css('backgroundPosition', 'center center');
-        indicator.css('backgroundColor', '#CCCCCC');
-        indicator.css('position', 'absolute');
-        svglib.setBackgroundImage(indicator, loadingImage);
-        indicator.appendTo(container);
-
-        $(view).on('gantt-show-indicator', function() {
-          container.css('overflow', 'hidden');
-          view.hide();
-          indicator.show();
-        }).on('gantt-hide-indicator', function() {
-          container.css('overflow', 'auto');
-          view.show();
-          indicator.hide();
-        });
-
-        setMinMax(opts.data);
-
-        new Chart(view, opts).render();
-      });
-    }
-
-    function setMinMax(data) {
-      var minmax = {min: Number.MAX_VALUE, max: Number.MIN_VALUE};
-
-      if (!(opts.start && opts.end)) {
-        for (var element in data ) {
-          var intervals = data[element].intervals;
-
-          for (var interval in intervals) {
-            var item = intervals[interval];
-
-            if (item.start < minmax.min)
-              minmax.min = item.start;
-
-            if (item.end > minmax.max)
-              minmax.max = item.end;
-          }
-        }
-
-        opts.start = minmax.min;
-        opts.end = minmax.max;
-      }
-    }
-  }
-
-  var Chart = function(div, opts) {
-    var rowContainer;
-
-    function renderData() {
-      
-      // clean up
-      div.empty();
-
-      // loading indicator
-      div.trigger('gantt-show-indicator');
-
-      setTimeout(function () {
-        
-        // data "rows"
-        for (var r in opts.data) {
-          var row = opts.data[r];
-
-          rowContainer = $('<div class="row-container"></div>');
-          var rowHeader = $('<div class="row-header"><span>' + row.id + ': ' + row.name + '</span></div>');
-          rowHeader.width(opts.rowHeaderWidth);
-          var dataContainer = $('<div class="row-data"></div>');
-
-          // element of interval of current row
-          for (var interval in row.intervals) {
-            var item = row.intervals[interval];
-
-            var lengthInMinutes;
-            if (item.start instanceof Date && item.end instanceof Date)
-              lengthInMinutes = minutesBetween(item.start, item.end);
-            else
-              lengthInMinutes = item.end - item.start;
-
-            // make size available in builder functions
-            item.size = lengthInMinutes;
-
-            var offset = item.start - opts.start;
-            var size = lengthInMinutes;
-
-            if (item.start instanceof Date && opts.granularity == 'minutes')
-              offset /= 60 * 1000;
-            if (item.start instanceof Date && opts.granularity == 'hours') {
-              offset /= 60 * 60 * 1000;
-              size /= 60;
-            }
-            if (item.start instanceof Date && opts.granularity == 'days') {
-              offset /= 24 * 60 * 60 * 1000;
-              size /= 24 * 60;
-            }
-
-
-            var rows = dataContainer.find('.item-row');
-
-            // recursive search of first row (top down) with space to spare
-            var getRow = function (currentItem, step) {
-              // fallback for first element (no row existing yet) and recursion end
-              if (interval == 0 || step > rows.length || step > opts.recursionDepth || opts.recursionDepth == 0) {
-
-                var itemRow = $('<div class="item-row"></div>');
-                itemRow.appendTo(dataContainer);
-
-                // return newly created row
-                return itemRow;
-              }
-
-              var rowCandidate = rows.eq(step - 1);
-              // data is appended with item-block (see below)
-              var lastItemInRow = rowCandidate.find('.item-block').last().data();
-
-              var overlap = isOverlapping(currentItem, lastItemInRow);
-
-              if (overlap)
-                return getRow(currentItem, ++step);
-              else {
-                return rowCandidate;
-              }
-            };
-
-            // recursion start
-            var itemRow = getRow(item, 1);
-
-            var label = row.labelBuilder ? row.labelBuilder(item, opts) : interval;
-            var title = row.titleBuilder ? row.titleBuilder(item, opts) : interval;
-
-            // appending item-block to row
-            $('<div class="item-block" data-title="' + title + '"><div class="item-text">' + label + '</div></div>')
-              .css({
-                'width': (opts.cellWidth * size) - 2 + 'px',
-                'left': (opts.cellWidth * offset) + 1 + 'px'
-              })
-              .appendTo(itemRow)
-              .data(item);
-          }
-
-          rowContainer.append(rowHeader);
-          rowContainer.append(dataContainer);
-        }
-
-        renderHeader();
-
-        div.append(rowContainer);
-
-        // remove loading indicator
-        div.trigger('gantt-hide-indicator');
-      }, 50);
-    }
-
-    function renderHeader() {
-      // render header
-      var headerDiv = $('<div class="ganttview-hzheader"></div>');
-      var monthsDiv = $('<div class="ganttview-hzheader-months"></div>');
-      var daysDiv = $('<div class="ganttview-hzheader-days"></div>');
-      var totalW = 0;
-
-      if (!(opts.data[0].intervals[0].start instanceof Date)) {
-        for (var i = opts.start; i <= opts.end; ++i) {
-          var w = opts.cellWidth;
-          totalW += w;
-
-          daysDiv.append('<div class="ganttview-hzheader-day">' + i + '</div>');
-        }
-
-        // only for spacing (remove completly?)
-        monthsDiv
-          .append($("<div>", {
-            "class": "ganttview-hzheader-month",
-            "css": {"width": (totalW) + "px"}
-          })
-            .append("time unit")
-        );
-      } else {
-        var currentTop = {};
-
-        for (var i = opts.start.getTime(); i <= opts.end.getTime(); /* increment at end of loop */) {
-          totalW += opts.cellWidth;
-
-          var currentDate = new Date(i);
-
-          var increment = 24 * 60 * 60 * 1000;
-
-          var topTier = currentDate.getMonth();
-          var bottomTier = currentDate.getDate();
-          var lengthOfTopTier = new Date(currentDate.getYear(), topTier, 0).getDate();
-
-          // adjustment for hours granularity
-          if (opts.granularity == 'hours') {
-            increment /= 24;
-
-            topTier = currentDate.getDate();
-            bottomTier = currentDate.getHours();
-            lengthOfTopTier = 24;
-          }
-
-          // adjustment for minutes granularity
-          if (opts.granularity == 'minutes') {
-            increment /= 24 * 60;
-
-            topTier = currentDate.getHours();
-            bottomTier = currentDate.getMinutes();
-            lengthOfTopTier = 60;
-          }
-
-          daysDiv.append('<div class="ganttview-hzheader-day">' + bottomTier + '</div>');
-
-          if (topTier != currentTop) {
-            currentTop = topTier;
-
-            // length adjustment because start/end might not be the same as first/last of top tier
-            if (opts.granularity == 'days') {
-              if (opts.start.getYear() == currentDate.getYear() && opts.start.getMonth() == currentTop)
-                lengthOfTopTier -= (opts.start.getDate() - 1);
-              if (opts.end.getYear() == currentDate.getYear() && opts.end.getMonth() == currentTop)
-                lengthOfTopTier -= (lengthOfTopTier - opts.end.getDate());
-
-              // days are 1 based while minutes and hours start at 0
-              --lengthOfTopTier;
-            }
-            if (opts.granularity == 'hours') {
-              if (opts.start.getYear() == currentDate.getYear() && opts.start.getMonth() == currentDate.getMonth() && opts.start.getDate() == currentTop)
-                lengthOfTopTier -= (opts.start.getHours());
-              if (opts.end.getYear() == currentDate.getYear() && opts.end.getMonth() == currentDate.getMonth() && opts.end.getDate() == currentTop)
-                lengthOfTopTier -= (lengthOfTopTier - opts.end.getHours());
-            }
-            if (opts.granularity == 'minutes') {
-              if (opts.start.getYear() == currentDate.getYear() && opts.start.getMonth() == currentDate.getMonth() && opts.start.getDate() == currentDate.getDate() && opts.start.getHours() == currentTop)
-                lengthOfTopTier -= (opts.start.getHours());
-              if (opts.end.getYear() == currentDate.getYear() && opts.end.getMonth() == currentDate.getMonth() && opts.end.getDate() == currentDate.getDate() && opts.end.getHours() == currentTop)
-                lengthOfTopTier -= (lengthOfTopTier - opts.end.getMinutes());
-            }
-
-            var borderAdjustment = i == opts.start.getTime() ? 0 : 1;
-
-            monthsDiv
-              .append($("<div>", {
-                "class": "ganttview-hzheader-month",
-                "css": {"width": (opts.cellWidth * lengthOfTopTier - borderAdjustment) + "px"}
-              })
-                .append(currentTop)
-            );
-          }
-
-          // increment
-          i += increment;
-        }
-      }
-
-      headerDiv.css({'left': opts.rowHeaderWidth +'px'});
-
-      daysDiv.css("width", totalW + "px");
-      headerDiv.append(monthsDiv).append(daysDiv);
-      div.prepend(headerDiv);
-
-      // calc and set row width
-      rowContainer.find('.row-data').width(div.find('.ganttview-hzheader-days').width());
-
-      div.find('.row-container').css('width', totalW + opts.rowHeaderWidth);
-
-      var percent = (100 / totalW * opts.cellWidth).toFixed(2);
-      /*div.find('.item-row').css({
-       'background': 'repeating-linear-gradient(90deg, #f0f0f0, rgba(0,0,0,0) 1%, rgba(0,0,0,0) '+ (percent-1) +'%, #f0f0f0 '+ (percent) +'%)',
-       'background-repeat': 'repeat-x'
-       });*/
-    }
-
-    // granularity change handler
-    $('.ganttview').on('gantt-granularity-change', function(event, data) {
-      if (data.f || opts.granularity != data.g) {
-        opts.granularity = data.g;
-
-        renderData();
-      }
-    });
-
-    return {
-      render: renderData
-    };
-  };
-
-  /**
-   * Convenient function to detect overlaps.
-   
-   * @param item contains start: {number}|{date}, size: {number}
-   * @return true if items overlap or touch else false
-   */
-  var isOverlapping = function(item1, item2) {
-    var compValue = item1.start - item2.start;
-
-    if (compValue == 0) {
-      return true;
-    }
-
-    var first = compValue < 0 ? item1 : item2;
-    var next = compValue > 0 ? item1 : item2;
-
-    var scalingFactor = 1;
-    if (first.start instanceof Date) {
-      
-      // scale minutes to millis
-      scalingFactor = (60 * 1000);
-    }
-
-    // overlap if next start < first end
-    return +next.start < +first.start + +first.size * scalingFactor;
-  };
-
-  var minutesBetween = function(start, end) {
-    if (!start || !end)
-      return 0;
-
-    start = Date.parse(start);
-    end = Date.parse(end);
-
-    if (start.getYear() == 1901 || end.getYear() == 8099)
-      return 0;
-
-    return (end.getTime() - start.getTime()) / (60 * 1000) + 1;
-  };
+  
+  return GanttChart;
 });
