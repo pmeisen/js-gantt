@@ -197,6 +197,7 @@ define(['jquery',
   GanttChart.prototype = {
     el: null,
     masking: null,
+    illustrator: null,
     
     defaultCfg: {
       
@@ -209,7 +210,7 @@ define(['jquery',
       },
       
       illustrator: {
-        instance: new SvgIllustrator(),
+        factory: function() { return new SvgIllustrator() },
         config: {}
       },
       
@@ -281,7 +282,8 @@ define(['jquery',
       })
       
       // initialize the illustrator
-      this.opts.illustrator.instance.init(this.view, this.opts.illustrator.config);
+      this.illustrator = this.opts.illustrator.factory();
+      this.illustrator.init(this.view, this.opts.illustrator.config);
       
       this.load();
     },
@@ -379,7 +381,7 @@ define(['jquery',
       window.setTimeout(function () {
         
         try {
-          _ref.opts.illustrator.instance.draw(data.timeaxis, data.records, map);
+          _ref.illustrator.draw(data.timeaxis, data.records, map);
         
           // we are done with the rendering so trigger the event
           _ref.view.trigger('renderEnd');

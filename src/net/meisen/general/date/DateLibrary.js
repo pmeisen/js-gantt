@@ -6,7 +6,7 @@ define([], function () {
   DateLibrary = function() {
   };
   
-  /*
+  /**
    * Static function useful to generate UTC dates. The parameters are optional,
    * i.e. can be null or undefined. If not specified the date-information will be
    * set to today, whereby the time-information will be set to 0 if not specified.
@@ -25,8 +25,56 @@ define([], function () {
     return new Date(Date.UTC(y, m, d, h, mi, s));
   };
   
-  DateLibrary.truncateUTC = function(y, m, d, h, mi, s) {
+  /**
+   * Static function used to truncate a date on a specific level. 
+   */
+  DateLibrary.truncateUTC = function(date, level) {
+    var res = new Date(date.getTime());
     
+    switch (level) {
+      case 'y':
+        res.setUTCFullYear(0);
+      case 'm':
+        res.setUTCMonth(0);
+      case 'd':
+        res.setUTCDate(1);
+      case 'h':
+        res.setUTCHours(0);
+      case 'mi':
+        res.setUTCMinutes(0);
+      case 's':
+        res.setUTCSeconds(0);
+        break;
+    }
+    
+    return res;
+  };
+  
+  DateLibrary.modifyUTC = function(date, amount, level) {
+    var res = new Date(date.getTime());
+    
+    switch (level) {
+      case 'y':
+        res.setUTCFullYear(date.getUTCFullYear() + amount);
+        break;
+      case 'm':
+        res.setUTCMonth(date.getUTCMonth() + amount);
+        break;
+      case 'd':
+        res.setUTCDate(date.getUTCDate() + amount);
+        break;
+      case 'h':
+        res.setUTCHours(date.getUTCHours() + amount);
+        break;
+      case 'mi':
+        res.setUTCMinutes(date.getUTCMinutes() + amount);
+        break;
+      case 's':
+        res.setUTCSeconds(date.getUTCSeconds() + amount);
+        break;
+    }
+    
+    return res;
   };
     
   return DateLibrary;
