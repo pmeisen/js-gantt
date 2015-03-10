@@ -1,6 +1,6 @@
 define(['jquery', 
         'net/meisen/general/date/DateLibrary', 
-        'net/meisen/ui/gantt/SvgIllustrator', 
+        'net/meisen/ui/gantt/svg/SvgIllustrator', 
         'net/meisen/ui/svglibrary/SvgLibrary', 
         'net/meisen/ui/svglibrary/LoadingCircles'], function (
         $, 
@@ -109,8 +109,8 @@ define(['jquery',
           var min = -1;
           
           $.each(records, function(idx, val) {
-            var s = utilities.toDate(val[map.start]).getTime();
-            var e = utilities.toDate(val[map.end]).getTime();
+            var s = datelib.parseISO8601(val[map.start]).getTime();
+            var e = datelib.parseISO8601(val[map.end]).getTime();
             
             if (needStart && $.isNumeric(s)) {
               min = min == -1 || min > s ? s : min;
@@ -151,37 +151,6 @@ define(['jquery',
       } else {
         return timeaxis;
       }
-    },
-    
-    toDate: function(value) {
-      
-      // check null
-      if (value == null || typeof(value) == 'undefined') {
-        return null;
-      } 
-      
-      // check if we have a Date
-      if (value instanceof Date) {
-        return value;
-      } 
-      
-      // check ISO8601 
-      var regex = new RegExp('^([\\d]{4})\\-([\\d]{2})\\-([\\d]{2})T([\\d]{2}):([\\d]{2}):([\\d]{2})(\\.([\\d]{3}))?Z$');
-      var matches = regex.exec(date);
-      if (matches != null) {
-
-        return new Date(Date.UTC(
-          parseInt(matches[1], 10),
-          parseInt(matches[2], 10) - 1,
-          parseInt(matches[3], 10),
-          parseInt(matches[4], 10),
-          parseInt(matches[5], 10),
-          parseInt(matches[6], 10)
-        ));
-      }
-      
-      // fallback
-      return null;
     }
   };
   

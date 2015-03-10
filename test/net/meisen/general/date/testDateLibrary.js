@@ -147,3 +147,16 @@ test('testModifyUTC', function() {
   equal(date.getUTCMinutes(), 42, 'modify hours');
   equal(date.getUTCSeconds(), 59, 'modify hours');
 });
+
+test('testParseISO8601', function() {
+  var dateLibrary = require('net/meisen/general/date/DateLibrary');
+  var date;
+  
+  date = dateLibrary.parseISO8601('2007-12-24T18:21:10Z');
+  equal(date.getUTCFullYear(), 2007, 'parsed year');
+  equal(date.getUTCMonth(), 11, 'parsed month');
+  equal(date.getUTCDate(), 24, 'parsed day');
+  equal(date.getUTCHours(), 18, 'parsed hours');
+  equal(date.getUTCMinutes(), 21, 'parsed minutes');
+  equal(date.getUTCSeconds(), 10, 'parsed seconds');
+});

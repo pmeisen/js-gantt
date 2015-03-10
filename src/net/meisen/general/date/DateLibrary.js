@@ -76,6 +76,37 @@ define([], function () {
     
     return res;
   };
+  
+  DateLibrary.parseISO8601 = function(value) {
+      
+      // check null
+      if (value == null || typeof(value) == 'undefined') {
+        return null;
+      } 
+      
+      // check if we have a Date
+      if (value instanceof Date) {
+        return value;
+      } 
+      
+      // check ISO8601 
+      var regex = new RegExp('^([\\d]{4})\\-([\\d]{2})\\-([\\d]{2})T([\\d]{2}):([\\d]{2}):([\\d]{2})(\\.([\\d]{3}))?Z$');
+      var matches = regex.exec(value);
+      if (matches != null) {
+
+        return DateLibrary.createUTC(
+          parseInt(matches[1], 10),
+          parseInt(matches[2], 10),
+          parseInt(matches[3], 10),
+          parseInt(matches[4], 10),
+          parseInt(matches[5], 10),
+          parseInt(matches[6], 10)
+        );
+      }
+      
+      // fallback
+      return null;
+    }
     
   return DateLibrary;
 });
