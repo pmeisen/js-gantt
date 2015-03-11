@@ -132,20 +132,53 @@ test('testModifyUTC', function() {
   equal(date.getUTCSeconds(), 56, 'modify hours');
   
   date  = dateLibrary.modifyUTC(testDate, -75, 'mi');
-  equal(date.getUTCFullYear(), 2015, 'modify hours');
-  equal(date.getUTCMonth(), 5, 'modify hours');
-  equal(date.getUTCDate(), 12, 'modify hours');
-  equal(date.getUTCHours(), 14, 'modify hours');
-  equal(date.getUTCMinutes(), 28, 'modify hours');
-  equal(date.getUTCSeconds(), 56, 'modify hours');
+  equal(date.getUTCFullYear(), 2015, 'modify minutes');
+  equal(date.getUTCMonth(), 5, 'modify minutes');
+  equal(date.getUTCDate(), 12, 'modify minutes');
+  equal(date.getUTCHours(), 14, 'modify minutes');
+  equal(date.getUTCMinutes(), 28, 'modify minutes');
+  equal(date.getUTCSeconds(), 56, 'modify minutes');
   
   date  = dateLibrary.modifyUTC(testDate, -57, 's');
-  equal(date.getUTCFullYear(), 2015, 'modify hours');
-  equal(date.getUTCMonth(), 5, 'modify hours');
-  equal(date.getUTCDate(), 12, 'modify hours');
-  equal(date.getUTCHours(), 15, 'modify hours');
-  equal(date.getUTCMinutes(), 42, 'modify hours');
-  equal(date.getUTCSeconds(), 59, 'modify hours');
+  equal(date.getUTCFullYear(), 2015, 'modify seconds');
+  equal(date.getUTCMonth(), 5, 'modify seconds');
+  equal(date.getUTCDate(), 12, 'modify seconds');
+  equal(date.getUTCHours(), 15, 'modify seconds');
+  equal(date.getUTCMinutes(), 42, 'modify seconds');
+  equal(date.getUTCSeconds(), 59, 'modify seconds');
+  
+  // ask for an exact adding
+  date  = dateLibrary.modifyUTC(testDate, 4.5, 'mi', true);
+  equal(date.getUTCFullYear(), 2015, 'modify exact minutes');
+  equal(date.getUTCMonth(), 5, 'modify exact minutes');
+  equal(date.getUTCDate(), 12, 'modify exact minutes');
+  equal(date.getUTCHours(), 15, 'modify exact minutes');
+  equal(date.getUTCMinutes(), 48, 'modify exact minutes');
+  equal(date.getUTCSeconds(), 26, 'modify exact minutes');
+  
+  date  = dateLibrary.modifyUTC(testDate, 4.5, 'd', true);
+  equal(date.getUTCFullYear(), 2015, 'modify exact days');
+  equal(date.getUTCMonth(), 5, 'modify exact days');
+  equal(date.getUTCDate(), 17, 'modify exact days');
+  equal(date.getUTCHours(), 3, 'modify exact days');
+  equal(date.getUTCMinutes(), 43, 'modify exact days');
+  equal(date.getUTCSeconds(), 56, 'modify exact days');
+  
+  date  = dateLibrary.modifyUTC(testDate, 4.5, 'm', true);
+  equal(date.getUTCFullYear(), 2015, 'modify exact months');
+  equal(date.getUTCMonth(), 9, 'modify exact months');
+  equal(date.getUTCDate(), 28, 'modify exact months');
+  equal(date.getUTCHours(), 3, 'modify exact months');
+  equal(date.getUTCMinutes(), 43, 'modify exact months');
+  equal(date.getUTCSeconds(), 56, 'modify exact months');
+  
+  date  = dateLibrary.modifyUTC(testDate, 4.5, 'y', true);
+  equal(date.getUTCFullYear(), 2019, 'modify exact years');
+  equal(date.getUTCMonth(), 11, 'modify exact years');
+  equal(date.getUTCDate(), 12, 'modify exact years');
+  equal(date.getUTCHours(), 15, 'modify exact years');
+  equal(date.getUTCMinutes(), 43, 'modify exact years');
+  equal(date.getUTCSeconds(), 56, 'modify exact years');
 });
 
 test('testParseISO8601', function() {

@@ -51,33 +51,99 @@ define([], function () {
     return res;
   };
   
-  DateLibrary.modifyUTC = function(date, amount, level) {
-    level = DateLibrary.normalizeLevel(level);
-    var res = new Date(date.getTime());
+  DateLibrary.modifyUTC = function(date, amount, level, exact) {
+    exact = typeof(exact) == 'undefined' || exact == null ? false : exact;
     
-    switch (level) {
-      case 'y':
-        res.setUTCFullYear(date.getUTCFullYear() + amount);
-        break;
-      case 'm':
-        res.setUTCMonth(date.getUTCMonth() + amount);
-        break;
-      case 'd':
-        res.setUTCDate(date.getUTCDate() + amount);
-        break;
-      case 'h':
-        res.setUTCHours(date.getUTCHours() + amount);
-        break;
-      case 'mi':
-        res.setUTCMinutes(date.getUTCMinutes() + amount);
-        break;
-      case 's':
-        res.setUTCSeconds(date.getUTCSeconds() + amount);
-        break;
+    level = DateLibrary.normalizeLevel(level);
+    
+    var res;
+    if (exact) {
+      
+      // get the base and the fraction
+      var base = Math.floor(amount);
+      var fraction = amount - base;
+      
+      // calculate the date based on the base
+      res = DateLibrary.modifyUTC(date, base, level, false);
+      
+      // add the fractional part
+      var multiplier = 1;
+      switch (level) {
+        case 'y':
+          /*
+           * Instead of using a multiplier like:
+           *   multiplier *= DateLibrary.numberOfDays(res.getUTCFullYear());
+           * we use the month implementation. This ensures that 0.5 adds 6 months, 
+           * instead of the half amount of days. This is more intuitive, someone
+           * will expect the middle of the year to be after 6 months and not after
+           * 182.5 (or 183) days.
+           */
+          return DateLibrary.modifyUTC(res, fraction * 12, 'm', true);
+        case 'm':
+          multiplier *= DateLibrary.numberOfDays(res.getUTCFullYear(), res.getUTCMonth() + 1);
+          break;
+      }
+      
+      switch (level) {
+        case 'y':
+        case 'm':
+        case 'd':
+          multiplier *= 24;
+        case 'h':
+          multiplier *= 60;
+        case 'mi':
+          multiplier *= 60;
+        case 's':
+          multiplier *= 1000;
+          break;
+      }
+      
+      // use the multiplier and calculate the date on milliseconds
+      res = new Date(res.getTime() + fraction * multiplier);
+    } else {
+      res = new Date(date.getTime());
+      
+      switch (level) {
+        case 'y':
+          res.setUTCFullYear(date.getUTCFullYear() + amount);
+          break;
+        case 'm':
+          res.setUTCMonth(date.getUTCMonth() + amount);
+          break;
+        case 'd':
+          res.setUTCDate(date.getUTCDate() + amount);
+          break;
+        case 'h':
+          res.setUTCHours(date.getUTCHours() + amount);
+          break;
+        case 'mi':
+          res.setUTCMinutes(date.getUTCMinutes() + amount);
+          break;
+        case 's':
+          res.setUTCSeconds(date.getUTCSeconds() + amount);
+          break;
+      }
     }
     
     return res;
   };
+    
+  DateLibrary.numberOfDays = function(year, month) {
+    
+    if (typeof(month) == 'undefined' || month == null) {
+      var d1 = Date.UTC(year + 1, 0, 0);
+      var d2 = Date.UTC(year, 0, 0);
+      
+      return Math.floor((d1 - d2) / (1000 * 60 * 60 * 24));
+    } else {
+      
+      /*
+       * Getting the 0-day of the next month (month is zero based), 
+       * is the last day of the requested month.
+       */
+      return new Date(Date.UTC(year, month, 0)).getUTCDate();
+    }
+  }
   
   DateLibrary.format = function(date, format) {
     var p = DateLibrary.pad;
