@@ -42,9 +42,8 @@ define(['jquery'], function ($) {
           if (diff == 0) {
             return;
           } else {
-            var view = status.scrollbar.getView();
             var direction = diff < 0 ? 'left' : 'right';
-            diff = Math.abs(diff) * (view.total / status.scrollbar.getScrollareaWidth());
+            diff = status.scrollbar.pixelToCoord(Math.abs(diff));
 
             status.scrollbar.move(direction, diff);
           }
@@ -87,56 +86,61 @@ define(['jquery'], function ($) {
     defaultCfg: {
       theme: {
         arrowSize: 14
-      }
+      },
+      step: 1
     },
     
     init: function(canvas, cfg) {
+      var _ref = this;
+            
       this.opts = $.extend(true, {}, this.defaultCfg, cfg);
       
-      var el, current;
-      var _ref = this;
-
       // create a group for the scrollbar
       this.bar = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
-      current = this.bar;
       
       // create the scrollbar
       this.scrollarea = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
       this.scrollarea.attr({ 'height': this.opts.theme.arrowSize, y: 0, 'rx': 0, 'ry': 0 });
       this.scrollarea.css({ 'fill': '#eeeeee', 'stroke': '#eeeeee', 'stroke-width': 1 });
-      this.scrollarea.appendTo(current);
+      this.scrollarea.appendTo(this.bar);
+      this.scrollarea.click(function(event) {
+        var coord = _ref.pixelToCoord(event.offsetX - _ref.opts.theme.arrowSize - 1);
+        var direction = coord < _ref.view.position ? 'left' : 'right';
+        
+        _ref.move(direction);
+      });
       
       // create the scroll-marker
       this.marker = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
       this.marker.attr({ 'height': this.opts.theme.arrowSize, 'y': 0, 'rx': 0, 'ry': 0 });
       this.marker.css({ 'fill': '#bfc8d1', 'stroke': '#bfc8d1', 'stroke-width': 1, 'cursor': 'default' });
-      this.marker.appendTo(current);
+      this.marker.appendTo(this.bar);
       this.marker.mousedown(utilities.createScroll(this));
       
       // create the left arrow
       this.leftArrow = utilities.createArrow(this.opts.theme.arrowSize, 'left', function() {
-        _ref.move('left');
+        _ref.move('left', _ref.opts.step);
       });
-      this.leftArrow.appendTo(current);
+      this.leftArrow.appendTo(this.bar);
       
       // create the right arrow
       this.rightArrow = utilities.createArrow(this.opts.theme.arrowSize, 'right', function() {
-        _ref.move('right');
+        _ref.move('right', _ref.opts.step);
       });
-      this.rightArrow.appendTo(current);
+      this.rightArrow.appendTo(this.bar);
 
       // append the scrollbar
-      current.appendTo(canvas);
+      this.bar.appendTo(canvas);
     },
     
     setPosition: function(x, y) {
       this.bar.attr({ 'transform': 'translate(' + x + ', ' + y + ')' });
     },
     
-    move: function(direction, size) {
-      size = typeof(size) == 'undefined' || size == null ? this.view.size : size;
+    move: function(direction, steps) {
+      steps = typeof(steps) == 'undefined' || steps == null ? this.view.size - 1 : steps;
 
-      var newPosition = this.view.position + ((direction == 'left' ? -1 : 1) * size);
+      var newPosition = this.view.position + ((direction == 'left' ? -1 : 1) * steps);
       newPosition = Math.max(0, newPosition);
       newPosition = Math.min(newPosition, this.view.total - this.view.size);
       
@@ -169,19 +173,37 @@ define(['jquery'], function ($) {
         this.view = { position: position, size: size, total: total };
       }
       
+      if (this.isScrollable()) {
+        this.bar.css('visibility', 'visible');
+      } else {
+        this.bar.css('visibility', 'hidden');
+      }
+      
       var offset = this.opts.theme.arrowSize + 1;
       
       var scrollareaWidth = this.getScrollareaWidth();
       scrollareaWidth = isNaN(scrollareaWidth) ? 0 : scrollareaWidth;
       
-      var markerWidth = total == 0 ? 0 : (size / total) * scrollareaWidth;
-      var markerPos = total == 0 ? 0 : offset + (position / total) * scrollareaWidth;
+      var markerWidth = this.coordToPixel(size - 1);
+      var markerPos = offset + this.coordToPixel(position);
       this.marker.attr({ 'width': markerWidth, 'x': markerPos });
       
       // trigger the event if there was a change
       if (changed) {
         this.bar.trigger('viewchange', { position: position, size: size });
       }
+    },
+    
+    isScrollable: function() {
+      return this.view.size != this.view.total
+    },
+    
+    pixelToCoord: function(pixel) {
+      return pixel * (this.view.total / this.getScrollareaWidth());
+    },
+    
+    coordToPixel: function(coord) {
+      return this.view.total == 0 ? 0 : (coord / this.view.total) * this.getScrollareaWidth();
     },
     
     setWidth: function(width, force) {

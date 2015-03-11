@@ -160,3 +160,62 @@ test('testParseISO8601', function() {
   equal(date.getUTCMinutes(), 21, 'parsed minutes');
   equal(date.getUTCSeconds(), 10, 'parsed seconds');
 });
+
+test('testDistance', function() {
+  var dateLibrary = require('net/meisen/general/date/DateLibrary');
+  var diff;
+
+  diff = dateLibrary.distanceUTC(
+            dateLibrary.createUTC(2015, 1, 15, 10, 22, 52), 
+            dateLibrary.createUTC(2015, 1, 15, 10, 22, 52), 
+            's');
+  equal(diff, 0);
+  
+  diff = dateLibrary.distanceUTC(
+            dateLibrary.createUTC(2015, 1, 15, 10, 22, 52), 
+            dateLibrary.createUTC(2015, 1, 15, 10, 22, 52), 
+            'mi');
+  equal(diff, 1);
+  
+  diff = dateLibrary.distanceUTC(
+            dateLibrary.createUTC(2015, 1, 15, 08, 27, 55), 
+            dateLibrary.createUTC(2015, 1, 15, 11, 22, 02), 
+            'mi');
+  equal(diff, 29 + 60 + 60 + 27);
+  
+  diff = dateLibrary.distanceUTC(
+            dateLibrary.createUTC(2015, 1, 13, 08, 27, 55), 
+            dateLibrary.createUTC(2015, 1, 15, 11, 22, 02), 
+            'd');
+  equal(diff, 3);
+  
+  diff = dateLibrary.distanceUTC(
+            dateLibrary.createUTC(2015, 1, 13, 08, 27, 55), 
+            dateLibrary.createUTC(2015, 1, 15, 11, 22, 02), 
+            'm');
+  equal(diff, 1);
+  
+  diff = dateLibrary.distanceUTC(
+            dateLibrary.createUTC(2013, 11, 13, 08, 27, 55), 
+            dateLibrary.createUTC(2015, 3, 15, 11, 22, 02), 
+            'm');
+  equal(diff, 17);
+  
+  diff = dateLibrary.distanceUTC(
+            dateLibrary.createUTC(2014, 11, 13, 08, 27, 55), 
+            dateLibrary.createUTC(2014, 12, 15, 11, 22, 02), 
+            'm');
+  equal(diff, 2);
+  
+  diff = dateLibrary.distanceUTC(
+            dateLibrary.createUTC(2014, 11, 13, 08, 27, 55), 
+            dateLibrary.createUTC(2014, 12, 15, 11, 22, 02), 
+            'y');
+  equal(diff, 1);
+  
+  diff = dateLibrary.distanceUTC(
+            dateLibrary.createUTC(2013, 11, 13, 08, 27, 55), 
+            dateLibrary.createUTC(2015, 3, 15, 11, 22, 02), 
+            'y');
+  equal(diff, 3);
+});

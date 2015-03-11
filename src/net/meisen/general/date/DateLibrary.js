@@ -29,6 +29,7 @@ define([], function () {
    * Static function used to truncate a date on a specific level. 
    */
   DateLibrary.truncateUTC = function(date, level) {
+    level = DateLibrary.normalizeLevel(level);
     var res = new Date(date.getTime());
     
     switch (level) {
@@ -51,6 +52,7 @@ define([], function () {
   };
   
   DateLibrary.modifyUTC = function(date, amount, level) {
+    level = DateLibrary.normalizeLevel(level);
     var res = new Date(date.getTime());
     
     switch (level) {
@@ -75,6 +77,114 @@ define([], function () {
     }
     
     return res;
+  };
+  
+  DateLibrary.format = function(date, format) {
+    var p = DateLibrary.pad;
+    
+    var res = format;
+    
+    res = res.replace('yyyy', p(date.getUTCFullYear(), 4));
+    res = res.replace('MM', p(date.getUTCMonth() + 1));
+    res = res.replace('dd', p(date.getUTCDate()));
+    res = res.replace('HH', p(date.getUTCHours()));
+    res = res.replace('mm', p(date.getUTCMinutes()));
+    res = res.replace('ss', p(date.getUTCSeconds()));
+    
+    return res;
+  };
+  
+  DateLibrary.pad = function(nr, max) {
+    var str = '' + nr;
+    max = typeof(max) == 'undefined' || max == null ? 2 : max;
+    
+    return str.length < max ? DateLibrary.pad('0' + str, max) : str;
+  };
+  
+  DateLibrary.normalizeLevel = function(level) {
+    switch (level) {
+      case 'y':
+      case 'year':
+      case 'years':
+        return 'y';
+      case 'm':
+      case 'month':
+      case 'months':
+        return 'm';
+      case 'd':
+      case 'day':
+      case 'days':
+        return 'd';
+      case 'h':
+      case 'hour':
+      case 'hours':
+        return 'h';
+      case 'mi':
+      case 'minute':
+      case 'minutes':
+        return 'mi';
+      case 's':
+      case 'second':
+      case 'seconds':
+        return 's';
+    }
+    
+    return null;
+  };
+  
+  DateLibrary.getPreviousLevel = function(level) {
+    level = DateLibrary.normalizeLevel(level);
+    switch (level) {
+      case 'y':
+        return 'm';
+      case 'm':
+        return 'd';
+      case 'd':
+        return 'h';
+      case 'h':
+        return 'mi';
+      case 'mi':
+        return 's';
+      case 's':
+        return null;
+    }
+  };
+  
+  DateLibrary.distanceUTC = function(date1, date2, level) {
+    level = DateLibrary.normalizeLevel(level);
+    var prevLevel = DateLibrary.getPreviousLevel(level);
+    
+    var truncDate1 = prevLevel == null ? date1 : DateLibrary.truncateUTC(date1, prevLevel);
+    var truncDate2 = prevLevel == null ? date2 : DateLibrary.truncateUTC(date2, prevLevel);
+    
+    // if the truncation modified the end, we increase it by 1
+    if (level != 's' && date2.getTime() != truncDate2.getTime()) {
+      truncDate2 = DateLibrary.modifyUTC(truncDate2, 1, level);
+    }
+        
+    var diff = Math.ceil((truncDate2.getTime() - truncDate1.getTime()) / 1000);
+    switch (level) { 
+      case 'd':
+        diff /= 24;
+      case 'h':
+        diff /= 60;
+      case 'mi':
+        diff /= 60;
+      case 's':
+        // nothing to do
+        break;
+      case 'y':
+        diff = truncDate2.getFullYear() - truncDate1.getFullYear();
+        break;
+      case 'm':      
+        diff = (truncDate2.getFullYear() - truncDate1.getFullYear()) * 12;
+        diff -= truncDate1.getMonth() + 1;
+        diff += truncDate2.getMonth() + 1;
+                
+        break;
+    }
+    
+    return Math.ceil(diff);
   };
   
   DateLibrary.parseISO8601 = function(value) {

@@ -20,10 +20,15 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
         records: [
           [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 2, 0, 0), '2 Hours', 120 ],
           [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 23, 59, 0), 'All Day', 1439 ]
-        ]
+        ],
+        timeaxis: {
+          end: datelib.modifyUTC(datelib.createUTC(null, null, null, 23, 59, 0), 1, 'd'),
+          granularity: 'mi'
+        }
       }
     });
   chartFixedData.resize(800, 300);
+  chartFixedData.click(function() { chartFixedData.resize(1500, 300); });
 
   var chartLoadedData = $("#chartLoadedData").ganttChart({
       data: {
@@ -40,7 +45,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
         },
         timeaxis: {
           start: new Date(Date.UTC(2015, 0, 1)),
-          end: new Date(Date.UTC(2015, 11, 31, 23, 59, 00))
+          end: new Date(Date.UTC(2015, 11, 1, 23, 59, 00))
         }
       }
     });
