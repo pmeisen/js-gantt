@@ -51,8 +51,8 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
     sepLine: null,
     ticks: null,
     width: 0,
-    relativeMove: 0,
     gap: 0,
+    size: { height: 0, width: 0 },
     settings: {
       type: null,
       rawstart: null,
@@ -191,8 +191,8 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
       // determine the movement of the whole axis
       var totalWidth = size == 0 ? this.width : this.width * (total - 1) / (size - 1);
       var totalMove = total == 0 ? 0 : (position / (total - 1)) * totalWidth;
-      this.relativeMove = -1 * (totalMove % this.gap);
-      this.ticks.attr({ 'transform': 'translate(' + this.relativeMove + ', 0)' });
+      var relativeMove = -1 * (totalMove % this.gap);
+      this.ticks.attr({ 'transform': 'translate(' + relativeMove + ', 0)' });
 
       // add the number of the labels
       var start = Math.round(position / tickInterval) * tickInterval;
@@ -202,7 +202,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
         var tickGroup = $(el);
         
         // check if the first one is currently used
-        if (idx == 0 && _ref.relativeMove < -0.5 * _ref.gap) {
+        if (idx == 0 && relativeMove < -0.5 * _ref.gap) {
           tickGroup.removeAttr('data-index');
         } else {
           var pos = start + i * tickInterval;
@@ -258,6 +258,13 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
           tickGroup.css('visibility', 'visible');
         }
       });
+
+      var bbox = this.axis.get(0).getBBox();
+      var size = { 'height': bbox.height, 'width': bbox.width };
+      if (this.size.height != size.height || this.size.width != size.width) {
+        this.size = size;
+        this.axis.trigger('sizechange', this);
+      }
     },
     
     getViewPositions: function() {
@@ -400,6 +407,10 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
     
     off: function(event, handler) {
       this.axis.off(event, handler);
+    },
+    
+    getSize: function() {
+      return this.size;
     }
   };
     

@@ -27,8 +27,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
         }
       }
     });
-  chartFixedData.resize(800, 300);
-  chartFixedData.click(function() { chartFixedData.resize(1500, 300); });
+  chartFixedData.resize(1500, 300);
 
   var chartLoadedData = $("#chartLoadedData").ganttChart({
       data: {

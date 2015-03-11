@@ -65,6 +65,9 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
       this.scrollbar.on('viewchange', function(event, data) {
         _ref.timeAxis.setView(data.position, data.size);
       });
+      this.scrollbar.on('sizechange', function(event, data) {
+        console.log(data.getSize());
+      });
       
       // create the axis
       this.timeAxis = new TimeAxis();
@@ -72,7 +75,9 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
       this.timeAxis.on('viewchange', function(event, data) {
         console.log(data);
       });
-      
+      this.timeAxis.on('sizechange', function(event, data) {
+        console.log(data.getSize());
+      });
     },
     
     resize: function(width, height) {

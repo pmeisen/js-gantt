@@ -76,6 +76,8 @@ define(['jquery'], function ($) {
     leftArrow: null,
     rightArrow: null,
     
+    size: { height: 0, width: 0 },
+    
     width: 0,
     view: {
       position: 0,
@@ -97,6 +99,16 @@ define(['jquery'], function ($) {
       
       // create a group for the scrollbar
       this.bar = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+      this.bar.on('viewchange', function() {
+        setTimeout(function() { 
+          var bbox = _ref.bar.get(0).getBBox();
+          var size = { 'height': bbox.height, 'width': bbox.width };
+          if (_ref.size.height != size.height || _ref.size.width != size.width) {
+            _ref.size = size;
+            _ref.bar.trigger('sizechange', _ref);
+          }
+        }, 0); 
+      });
       
       // create the scrollbar
       this.scrollarea = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
@@ -247,6 +259,10 @@ define(['jquery'], function ($) {
     
     off: function(event, handler) {
       this.bar.off(event, handler);
+    },
+    
+    getSize: function() {
+      return this.size;
     }
   };
     
