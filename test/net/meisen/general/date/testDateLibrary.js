@@ -97,88 +97,64 @@ test('testTruncateUTC', function() {
 test('testModifyUTC', function() {
   var dateLibrary = require('net/meisen/general/date/DateLibrary');
   var testDate = dateLibrary.createUTC(2015, 6, 12, 15, 43, 56);
-  var date;
+  
+  var date, exp;
   
   date  = dateLibrary.modifyUTC(testDate, 10, 'y');
-  equal(date.getUTCFullYear(), 2025, 'modify years');
-  equal(date.getUTCMonth(), 5, 'modify years');
-  equal(date.getUTCDate(), 12, 'modify years');
-  equal(date.getUTCHours(), 15, 'modify years');
-  equal(date.getUTCMinutes(), 43, 'modify years');
-  equal(date.getUTCSeconds(), 56, 'modify years');
+  exp = dateLibrary.createUTC(2025, 6, 12, 15, 43, 56);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
   
   date  = dateLibrary.modifyUTC(testDate, 13, 'm');
-  equal(date.getUTCFullYear(), 2016, 'modify months');
-  equal(date.getUTCMonth(), 6, 'modify months');
-  equal(date.getUTCDate(), 12, 'modify months');
-  equal(date.getUTCHours(), 15, 'modify months');
-  equal(date.getUTCMinutes(), 43, 'modify months');
-  equal(date.getUTCSeconds(), 56, 'modify months');
+  exp = dateLibrary.createUTC(2016, 7, 12, 15, 43, 56);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
   
   date  = dateLibrary.modifyUTC(testDate, 31, 'd');
-  equal(date.getUTCFullYear(), 2015, 'modify days');
-  equal(date.getUTCMonth(), 6, 'modify days');
-  equal(date.getUTCDate(), 13, 'modify days');
-  equal(date.getUTCHours(), 15, 'modify days');
-  equal(date.getUTCMinutes(), 43, 'modify days');
-  equal(date.getUTCSeconds(), 56, 'modify days');
+  exp = dateLibrary.createUTC(2015, 7, 13, 15, 43, 56);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
   
   date  = dateLibrary.modifyUTC(testDate, 43, 'h');
-  equal(date.getUTCFullYear(), 2015, 'modify hours');
-  equal(date.getUTCMonth(), 5, 'modify hours');
-  equal(date.getUTCDate(), 14, 'modify hours');
-  equal(date.getUTCHours(), 10, 'modify hours');
-  equal(date.getUTCMinutes(), 43, 'modify hours');
-  equal(date.getUTCSeconds(), 56, 'modify hours');
+  exp = dateLibrary.createUTC(2015, 6, 14, 10, 43, 56);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
   
   date  = dateLibrary.modifyUTC(testDate, -75, 'mi');
-  equal(date.getUTCFullYear(), 2015, 'modify minutes');
-  equal(date.getUTCMonth(), 5, 'modify minutes');
-  equal(date.getUTCDate(), 12, 'modify minutes');
-  equal(date.getUTCHours(), 14, 'modify minutes');
-  equal(date.getUTCMinutes(), 28, 'modify minutes');
-  equal(date.getUTCSeconds(), 56, 'modify minutes');
+  exp = dateLibrary.createUTC(2015, 6, 12, 14, 28, 56);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
   
   date  = dateLibrary.modifyUTC(testDate, -57, 's');
-  equal(date.getUTCFullYear(), 2015, 'modify seconds');
-  equal(date.getUTCMonth(), 5, 'modify seconds');
-  equal(date.getUTCDate(), 12, 'modify seconds');
-  equal(date.getUTCHours(), 15, 'modify seconds');
-  equal(date.getUTCMinutes(), 42, 'modify seconds');
-  equal(date.getUTCSeconds(), 59, 'modify seconds');
+  exp = dateLibrary.createUTC(2015, 6, 12, 15, 42, 59);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
   
   // ask for an exact adding
   date  = dateLibrary.modifyUTC(testDate, 4.5, 'mi', true);
-  equal(date.getUTCFullYear(), 2015, 'modify exact minutes');
-  equal(date.getUTCMonth(), 5, 'modify exact minutes');
-  equal(date.getUTCDate(), 12, 'modify exact minutes');
-  equal(date.getUTCHours(), 15, 'modify exact minutes');
-  equal(date.getUTCMinutes(), 48, 'modify exact minutes');
-  equal(date.getUTCSeconds(), 26, 'modify exact minutes');
+  exp = dateLibrary.createUTC(2015, 6, 12, 15, 48, 26);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
   
   date  = dateLibrary.modifyUTC(testDate, 4.5, 'd', true);
-  equal(date.getUTCFullYear(), 2015, 'modify exact days');
-  equal(date.getUTCMonth(), 5, 'modify exact days');
-  equal(date.getUTCDate(), 17, 'modify exact days');
-  equal(date.getUTCHours(), 3, 'modify exact days');
-  equal(date.getUTCMinutes(), 43, 'modify exact days');
-  equal(date.getUTCSeconds(), 56, 'modify exact days');
+  exp = dateLibrary.createUTC(2015, 6, 17, 3, 43, 56);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
+ 
+  // add 1/30 of a month with 30 days, i.e. 1 day
+  testDate = dateLibrary.createUTC(2015, 6, 1, 0, 0, 0); 
+  date  = dateLibrary.modifyUTC(testDate, 1 / 30, 'm', true);
+  exp = dateLibrary.createUTC(2015, 6, 2, 0, 0, 0);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
+ 
+  // add 1/24 of  a day of 1/30, i.e. 1 hour
+  testDate = dateLibrary.createUTC(2015, 6, 1, 0, 0, 0); 
+  date  = dateLibrary.modifyUTC(testDate, (1 / 24) / 30, 'm', true);
+  exp = dateLibrary.createUTC(2015, 6, 1, 1, 0, 0);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
+ 
+  testDate = dateLibrary.createUTC(2015, 6, 1, 0, 0, 0); 
+  date  = dateLibrary.modifyUTC(testDate, 4, 'm', true);
+  exp = dateLibrary.createUTC(2015, 10, 1);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
   
-  date  = dateLibrary.modifyUTC(testDate, 4.5, 'm', true);
-  equal(date.getUTCFullYear(), 2015, 'modify exact months');
-  equal(date.getUTCMonth(), 9, 'modify exact months');
-  equal(date.getUTCDate(), 28, 'modify exact months');
-  equal(date.getUTCHours(), 3, 'modify exact months');
-  equal(date.getUTCMinutes(), 43, 'modify exact months');
-  equal(date.getUTCSeconds(), 56, 'modify exact months');
-  
-  date  = dateLibrary.modifyUTC(testDate, 4.5, 'y', true);
-  equal(date.getUTCFullYear(), 2019, 'modify exact years');
-  equal(date.getUTCMonth(), 11, 'modify exact years');
-  equal(date.getUTCDate(), 12, 'modify exact years');
-  equal(date.getUTCHours(), 15, 'modify exact years');
-  equal(date.getUTCMinutes(), 43, 'modify exact years');
-  equal(date.getUTCSeconds(), 56, 'modify exact years');
+  testDate = dateLibrary.createUTC(2015, 6, 1, 1, 0, 0); 
+  date  = dateLibrary.modifyUTC(testDate, 3 + (23/24 + 29) / 30, 'm', true);
+  exp = dateLibrary.createUTC(2015, 10, 1);
+  equal(date.getTime(), exp.getTime(), dateLibrary.formatUTC(date, 'dd.MM.yyyy HH:mm:ss') + ' expected ' +  dateLibrary.formatUTC(exp, 'dd.MM.yyyy HH:mm:ss'));
+
 });
 
 test('testParseISO8601', function() {
@@ -251,4 +227,38 @@ test('testDistance', function() {
             dateLibrary.createUTC(2015, 3, 15, 11, 22, 02), 
             'y');
   equal(diff, 3);
+});
+
+test('testExactDistance', function() {
+  
+  var dateLibrary = require('net/meisen/general/date/DateLibrary');
+  var levels = DateLibrary.getLevels();
+  
+  var assert = function(dateA, dateB) {
+    for (var i = 0; i < levels.length; i++) {
+      var level = levels[i];
+      
+      var diff1 = dateLibrary.distanceUTC(dateA, dateB, level, true);
+      var diff2 = dateLibrary.distanceUTC(dateB, dateA, level, true);
+      var res1 = dateLibrary.modifyUTC(dateA, diff1, level, true);
+      var res2 = dateLibrary.modifyUTC(dateB, diff2, level, true);
+      equal(res1.getTime(), dateB.getTime(), 'level: ' + level + ', diff: ' + diff1 + ', res: ' + dateLibrary.formatUTC(res1, 'dd.MM.yyyy HH:mm:ss') + ', exp: ' + dateLibrary.formatUTC(dateB, 'dd.MM.yyyy HH:mm:ss'));
+      equal(res2.getTime(), dateA.getTime(), 'level: ' + level + ', diff: ' + diff2 + ', res: ' + dateLibrary.formatUTC(res2, 'dd.MM.yyyy HH:mm:ss') + ', exp: ' + dateLibrary.formatUTC(dateA, 'dd.MM.yyyy HH:mm:ss'));
+    }
+  };
+  
+  // check the same date on all levels
+  assert(dateLibrary.createUTC(2015, 1, 15, 10, 22, 52), 
+         dateLibrary.createUTC(2015, 1, 15, 10, 22, 52));
+  
+  // generate some random dates
+  var start = dateLibrary.createUTC(2014, 1, 1, 0, 0, 0);
+  var end = dateLibrary.createUTC(2014, 12, 31, 23, 59, 59, 999);
+
+  // run 1000 random tests
+  for (var i = 0; i < 1000; i++) {
+    var dateA = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+    var dateB = new Date(dateA.getTime() + Math.random() * (end.getTime() - dateA.getTime())); 
+    assert(dateA, dateB);
+  }
 });

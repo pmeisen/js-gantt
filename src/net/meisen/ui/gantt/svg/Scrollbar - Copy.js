@@ -63,13 +63,13 @@ define(['jquery'], function ($) {
   /*
    * Default constructor...
    */
-  HorizontalScrollbar = function() {
+  Scrollbar = function() {
   };
   
   /*
    * Extended prototype
    */
-  HorizontalScrollbar.prototype = {
+  Scrollbar.prototype = {
     bar: null,
     scrollarea: null,
     marker: null,
@@ -99,16 +99,6 @@ define(['jquery'], function ($) {
       
       // create a group for the scrollbar
       this.bar = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
-      this.bar.on('viewchange', function() {
-        setTimeout(function() { 
-          var bbox = _ref.bar.get(0).getBBox();
-          var size = { 'height': bbox.height, 'width': bbox.width };
-          if (_ref.size.height != size.height || _ref.size.width != size.width) {
-            _ref.size = size;
-            _ref.bar.trigger('sizechange', _ref);
-          }
-        }, 0); 
-      });
       
       // create the scrollbar
       this.scrollarea = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
@@ -155,7 +145,7 @@ define(['jquery'], function ($) {
       var newPosition = this.view.position + ((direction == 'left' ? -1 : 1) * steps);
       newPosition = Math.max(0, newPosition);
       newPosition = Math.min(newPosition, this.view.total - this.view.size);
-      
+
       this.setView(newPosition, null, null, false);
     },
     
@@ -178,8 +168,8 @@ define(['jquery'], function ($) {
       }
       
       // check if we have a change or if it was forced to update
-      var changed = this.view.position != position || this.view.size != size || this.view.total != total;
-      if (!force && !changed) {
+      var changed = this.view.position != position || this.view.size != size;
+      if (!force && !changed && this.view.total == total) {
         return;
       } else {
         this.view = { position: position, size: size, total: total };
@@ -196,13 +186,24 @@ define(['jquery'], function ($) {
       var scrollareaWidth = this.getScrollareaWidth();
       scrollareaWidth = isNaN(scrollareaWidth) ? 0 : scrollareaWidth;
       
-      var markerWidth = this.coordToPixel(size - 1);
+      var markerWidth = this.coordToPixel(size);
       var markerPos = offset + this.coordToPixel(position);
       this.marker.attr({ 'width': markerWidth, 'x': markerPos });
       
       // trigger the event if there was a change
       if (changed) {
-        this.bar.trigger('viewchange', { position: position, size: size });
+        this.bar.trigger('viewchange', { position: position, size: size, total: total });
+        
+        // trigger a size change if needed
+        var _ref = this;
+        setTimeout(function() { 
+          var bbox = _ref.bar.get(0).getBBox();
+          var size = { 'height': bbox.height, 'width': bbox.width };
+          if (_ref.size.height != size.height || _ref.size.width != size.width) {
+            _ref.size = size;
+            _ref.bar.trigger('sizechanged', _ref);
+          }
+        }, 0); 
       }
     },
     
@@ -266,5 +267,5 @@ define(['jquery'], function ($) {
     }
   };
     
-  return HorizontalScrollbar;
+  return Scrollbar;
 });

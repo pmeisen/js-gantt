@@ -101,16 +101,18 @@ define(['jquery',
       
         // get the needed values
         if (records == null || typeof(records) == 'undefined' || !$.isArray(records) || records.length == 0 ||
-          map == null || typeof(map) == 'undefined' || map.start == -1 || map.end == -1) {
+            map == null || typeof(map) == 'undefined' || map.start == -1 || map.end == -1) {
           start = needStart ? datelib.createUTC() : start;
           end = needEnd ? datelib.createUTC(null, null, null, 23, 59, 0) : end;
         } else {
           var max = -1;
           var min = -1;
           
+          
+          // TODO! What if we have numbers
           $.each(records, function(idx, val) {
-            var s = datelib.parseISO8601(val[map.start]).getTime();
-            var e = datelib.parseISO8601(val[map.end]).getTime();
+            var s = val[map.start].getTime();
+            var e = val[map.end].getTime();
             
             if (needStart && $.isNumeric(s)) {
               min = min == -1 || min > s ? s : min;
@@ -164,10 +166,6 @@ define(['jquery',
    * Extended prototype
    */
   GanttChart.prototype = {
-    el: null,
-    masking: null,
-    illustrator: null,
-    
     defaultCfg: {
       
       theme: {
@@ -211,7 +209,7 @@ define(['jquery',
     
     init: function(selector, cfg) {
       this.opts = $.extend(true, {}, this.defaultCfg, cfg);
-            
+
       this.container = selector instanceof jQuery ? selector : $(selector);
       this.container.css('overflow', 'auto');
       this.container.css('position', 'relative');
@@ -220,6 +218,7 @@ define(['jquery',
       this.view.addClass('ganttview');
       this.view.css('position', 'absolute');
       this.view.css('overflow', 'hidden');
+      this.view.css('zIndex', 0);
       this.view.appendTo(this.container);
 
       this.indicator = $('<div></div>');
@@ -228,6 +227,7 @@ define(['jquery',
       this.indicator.css('backgroundPosition', this.opts.theme.loadingBackgroundPosition);
       this.indicator.css('backgroundColor', this.opts.theme.loadingBackgroundColor);
       this.indicator.css('position', 'absolute');
+      this.indicator.css('zIndex', 1000);
       svglib.setBackgroundImage(this.indicator, loadingImage);
       this.indicator.appendTo(this.container);
       
@@ -235,6 +235,7 @@ define(['jquery',
       this.error.addClass('gantterror');
       this.error.css('backgroundColor', this.opts.theme.errorBackgroundColor);
       this.error.css('position', 'absolute');
+      this.error.css('zIndex', '500');
       this.error.appendTo(this.container);
 
       var _ref = this;
@@ -253,6 +254,9 @@ define(['jquery',
       // initialize the illustrator
       this.illustrator = this.opts.illustrator.factory();
       this.illustrator.init(this.view, this.opts.illustrator.config);
+      this.illustrator.on('finishedLayouting', function() {
+        _ref.view.trigger('renderEnd');
+      });
       
       this.load();
     },
@@ -262,7 +266,6 @@ define(['jquery',
         this.masking = 'loading';   
         
         this.container.css('overflow', 'hidden');
-        this.view.hide();
         this.error.hide();
         this.indicator.show();
       }
@@ -271,7 +274,6 @@ define(['jquery',
     unmask: function() {
       if (this.masking != null) {
         this.container.css('overflow', 'auto');
-        this.view.show();
         this.indicator.hide();
         this.error.hide();
         
@@ -282,7 +284,7 @@ define(['jquery',
     resize: function(width, height) {
       this.container.css('width', width);
       this.container.css('height', height);
-    
+
       var innerWidth = this.container.width();
       var innerHeight = this.container.height();
       this.indicator.css('width', innerWidth);
@@ -291,7 +293,7 @@ define(['jquery',
       this.error.css('height', innerHeight);
       
       // fire the resize event
-      this.view.trigger('resize', { width: innerWidth, height: innerHeight });
+      this.view.trigger('sizechanged', { width: innerWidth, height: innerHeight });
     },
 
     changeTimeaxis: function(start, end, granularity, force) {
@@ -351,9 +353,6 @@ define(['jquery',
         
         try {
           _ref.illustrator.draw(data.timeaxis, data.records, map);
-        
-          // we are done with the rendering so trigger the event
-          _ref.view.trigger('renderEnd');
         } catch (error) {
           _ref.view.trigger('error', { error: error, message: 'Failed to draw', nr: '1003'});
         }
@@ -364,10 +363,9 @@ define(['jquery',
       console.error(data);
       
       if (this.masking != 'error') {
-        this.masking = 'error';      
+        this.masking = 'error';
         
         this.container.css('overflow', 'hidden');
-        this.view.hide();
         this.indicator.hide();
         this.error.show();
       }

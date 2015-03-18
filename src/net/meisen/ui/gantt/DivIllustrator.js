@@ -23,7 +23,7 @@ define(['jquery'], function ($) {
     },
     
     draw: function(timeaxis, records, map) {
-
+      
     }
   };
     

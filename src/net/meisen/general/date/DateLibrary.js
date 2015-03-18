@@ -11,7 +11,7 @@ define([], function () {
    * i.e. can be null or undefined. If not specified the date-information will be
    * set to today, whereby the time-information will be set to 0 if not specified.
    */
-  DateLibrary.createUTC = function(y, m, d, h, mi, s) {
+  DateLibrary.createUTC = function(y, m, d, h, mi, s, ms) {
     var now = new Date();
     
     y = typeof(y) == 'undefined' || y == null ? now.getFullYear() : y;
@@ -21,8 +21,9 @@ define([], function () {
     h = typeof(h) == 'undefined' || h == null ? 0 : h;
     mi = typeof(mi) == 'undefined' || mi == null ? 0 : mi;
     s = typeof(s) == 'undefined' || s == null ? 0 : s;
+    ms = typeof(ms) == 'undefined' || ms == null ? 0 : ms;
     
-    return new Date(Date.UTC(y, m, d, h, mi, s));
+    return new Date(Date.UTC(y, m, d, h, mi, s, ms));
   };
   
   /**
@@ -31,6 +32,7 @@ define([], function () {
   DateLibrary.truncateUTC = function(date, level) {
     level = DateLibrary.normalizeLevel(level);
     var res = new Date(date.getTime());
+    res.setUTCMilliseconds(0);
     
     switch (level) {
       case 'y':
@@ -52,41 +54,66 @@ define([], function () {
   };
   
   DateLibrary.modifyUTC = function(date, amount, level, exact) {
-    exact = typeof(exact) == 'undefined' || exact == null ? false : exact;
     
+    if (amount == 0) {
+      return date;
+    }
+    
+    exact = typeof(exact) == 'undefined' || exact == null ? false : exact;
     level = DateLibrary.normalizeLevel(level);
     
     var res;
     if (exact) {
+      var sign = amount < 0 ? -1 : 1;
       
-      // get the base and the fraction
+      if (level == 'y') {
+        /*
+         * Instead of using a multiplier like:
+         *   multiplier *= DateLibrary.numberOfDays(res.getUTCFullYear());
+         * we use the month implementation. This ensures that 0.5 adds 6 months, 
+         * instead of the half amount of days. This is more intuitive, someone
+         * will expect the middle of the year to be after 6 months and not after
+         * 182.5 (or 183) days.
+         */
+        return DateLibrary.modifyUTC(date, amount * 12, 'm', true);
+      } else if (level == 'm') {
+        /*
+         * This is more or less the most complicated part of the distance.
+         * We cannot just add the month, the month depends on the current 
+         * amount of days within the month, i.e. January +1 means +31 days
+         * on February +1 means +28 days (or even +29). Therefore the distance
+         * depends on the date and the distance to the edge of the month.
+         * Additionally the target month must be especially handled.
+         */
+        var edgeDate = DateLibrary.getEdgeDate(date, sign);
+        var orgMonthDays = DateLibrary.numberOfDays(date.getUTCFullYear(), date.getUTCMonth() + 1);
+        var normDistToEdge = DateLibrary.getDistanceToEdge(date, edgeDate) / orgMonthDays;
+        
+        // there is not enough amount to move, so just move within the month
+        if (Math.abs(amount) < Math.abs(normDistToEdge)) {
+          return DateLibrary.modifyUTC(date, amount * orgMonthDays, 'd', true);
+        } 
+        // change the amount to be still moved, sign determines the direction
+        else {
+          amount -= normDistToEdge;
+        }
+        
+        date = edgeDate;
+      }
+        
+      // get the base and the remainder
       var base = Math.floor(amount);
-      var fraction = amount - base;
+      var remainder = amount - base;
       
       // calculate the date based on the base
       res = DateLibrary.modifyUTC(date, base, level, false);
       
-      // add the fractional part
+      // determine the multiplier
       var multiplier = 1;
       switch (level) {
-        case 'y':
-          /*
-           * Instead of using a multiplier like:
-           *   multiplier *= DateLibrary.numberOfDays(res.getUTCFullYear());
-           * we use the month implementation. This ensures that 0.5 adds 6 months, 
-           * instead of the half amount of days. This is more intuitive, someone
-           * will expect the middle of the year to be after 6 months and not after
-           * 182.5 (or 183) days.
-           */
-          return DateLibrary.modifyUTC(res, fraction * 12, 'm', true);
         case 'm':
-          multiplier *= DateLibrary.numberOfDays(res.getUTCFullYear(), res.getUTCMonth() + 1);
-          break;
-      }
-      
-      switch (level) {
-        case 'y':
-        case 'm':
+          var destMonthDays = DateLibrary.numberOfDays(res.getUTCFullYear(), res.getUTCMonth() + 1);
+          multiplier *= destMonthDays;
         case 'd':
           multiplier *= 24;
         case 'h':
@@ -99,7 +126,7 @@ define([], function () {
       }
       
       // use the multiplier and calculate the date on milliseconds
-      res = new Date(res.getTime() + fraction * multiplier);
+      res = new Date(res.getTime() + remainder * multiplier);
     } else {
       res = new Date(date.getTime());
       
@@ -127,6 +154,25 @@ define([], function () {
     
     return res;
   };
+  
+  DateLibrary.getEdgeDate = function(date, sign) {
+    
+    if (sign == 1) {  
+      return DateLibrary.createUTC(date.getUTCFullYear(), date.getUTCMonth() + 2, 1);
+      //return DateLibrary.createUTC(date.getUTCFullYear(), date.getUTCMonth() + 2, 0, 23, 59, 59, 999);
+    } else {
+      return DateLibrary.createUTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1);
+    }
+  };
+  
+  DateLibrary.getDistanceToEdge = function(date, edgeDate) {
+    
+    // calculate the distance to the edge (01 or end) of the month
+    edgeDate = typeof(edgeDate) == 'number' ? DateLibrary.getEdgeDate(date, edgeDate) : edgeDate;
+    var distToEdge = DateLibrary.distanceUTC(date, edgeDate, 'd', true);
+    
+    return distToEdge;
+  };
     
   DateLibrary.numberOfDays = function(year, month) {
     
@@ -145,7 +191,7 @@ define([], function () {
     }
   }
   
-  DateLibrary.format = function(date, format) {
+  DateLibrary.formatUTC = function(date, format) {
     var p = DateLibrary.pad;
     
     var res = format;
@@ -216,41 +262,93 @@ define([], function () {
     }
   };
   
-  DateLibrary.distanceUTC = function(date1, date2, level) {
+  DateLibrary.getLevels = function() {
+    return [ 'y', 'm', 'd', 'h', 'mi', 's' ];
+  };
+  
+  DateLibrary.distanceUTC = function(date1, date2, level, exact) {
+    exact = typeof(exact) == 'undefined' || exact == null ? false : exact;
     level = DateLibrary.normalizeLevel(level);
-    var prevLevel = DateLibrary.getPreviousLevel(level);
     
-    var truncDate1 = prevLevel == null ? date1 : DateLibrary.truncateUTC(date1, prevLevel);
-    var truncDate2 = prevLevel == null ? date2 : DateLibrary.truncateUTC(date2, prevLevel);
-    
-    // if the truncation modified the end, we increase it by 1
-    if (level != 's' && date2.getTime() != truncDate2.getTime()) {
-      truncDate2 = DateLibrary.modifyUTC(truncDate2, 1, level);
-    }
+    if (exact) {
+      if (date1.getTime() == date2.getTime()) {
+        return 0;
+      }
+      
+      /*
+       * The exact calculation is quiet complicated, it has to be following
+       * the rules defined by DateLibrary.modifyUTC. It must apply that
+       *   
+       *  dateB == DateLibrary.modifyUTC(dateA, DateLibrary.distanceUTC(dateA, dateB, l, true), l, true)
+       */     
+      var base = 0;
+      var fraction = 1;
+      switch (level) {
+        case 'y':
+          return DateLibrary.distanceUTC(date1, date2, 'm', true) / 12;
+        break;
+        case 'm':
+          var ord = date1.getTime() < date2.getTime() ? 1 : -1;
         
-    var diff = Math.ceil((truncDate2.getTime() - truncDate1.getTime()) / 1000);
-    switch (level) { 
-      case 'd':
-        diff /= 24;
-      case 'h':
-        diff /= 60;
-      case 'mi':
-        diff /= 60;
-      case 's':
-        // nothing to do
+          // get the distance of each month within itself
+          var dist1Edge = DateLibrary.getEdgeDate(date1, ord);
+          var dist2Edge = DateLibrary.getEdgeDate(date2, -1 * ord);
+          var dist1 = DateLibrary.getDistanceToEdge(date1, dist1Edge) / DateLibrary.numberOfDays(date1.getUTCFullYear(), date1.getUTCMonth() + 1);
+          var dist2 = DateLibrary.getDistanceToEdge(date2, dist2Edge) / DateLibrary.numberOfDays(date2.getUTCFullYear(), date2.getUTCMonth() + 1);
+          
+          // get the base, i.e. the full month between
+          var base = DateLibrary.distanceUTC(dist1Edge, dist2Edge, 'm', false);
+          return dist1 + -1 * dist2 + base;
         break;
-      case 'y':
-        diff = truncDate2.getFullYear() - truncDate1.getFullYear();
-        break;
-      case 'm':      
-        diff = (truncDate2.getFullYear() - truncDate1.getFullYear()) * 12;
-        diff -= truncDate1.getMonth() + 1;
-        diff += truncDate2.getMonth() + 1;
-                
-        break;
+        case 'd':
+          fraction *= 24;
+        case 'h':
+          fraction *= 60;
+        case 'mi':
+          fraction *= 60;
+        case 's':
+          fraction *= 1000;
+          break;
+      }
+
+      return (date2.getTime() - date1.getTime()) / fraction;
+    } else {
+      var prevLevel = DateLibrary.getPreviousLevel(level);
+      
+      var truncDate1 = prevLevel == null ? date1 : DateLibrary.truncateUTC(date1, prevLevel);
+      var truncDate2 = prevLevel == null ? date2 : DateLibrary.truncateUTC(date2, prevLevel);
+      
+      // if the truncation modified the end, we increase it by 1
+      if (level != 's' && date2.getTime() != truncDate2.getTime()) {
+        truncDate2 = DateLibrary.modifyUTC(truncDate2, 1, level);
+      }
+      
+      var diff = 0;
+      var fraction = 1;
+      switch (level) { 
+        case 'd':
+          fraction *= 24;
+        case 'h':
+          fraction *= 60;
+        case 'mi':
+          fraction *= 60;
+        case 's':
+          diff = Math.ceil((truncDate2.getTime() - truncDate1.getTime()) / 1000);
+          diff /= fraction;
+          // nothing to do
+          break;
+        case 'y':
+          diff = truncDate2.getFullYear() - truncDate1.getFullYear();
+          break;
+        case 'm':      
+          diff = (truncDate2.getFullYear() - truncDate1.getFullYear()) * 12;
+          diff -= truncDate1.getMonth() + 1;
+          diff += truncDate2.getMonth() + 1;
+          break;
+      }
+      
+      return Math.ceil(diff);
     }
-    
-    return Math.ceil(diff);
   };
   
   DateLibrary.parseISO8601 = function(value) {

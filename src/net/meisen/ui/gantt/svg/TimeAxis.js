@@ -1,7 +1,7 @@
 define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) {
   
   var utilities = {
-    drawTicks: function(ticks, gap, numberOfGaps) {
+    drawTicks: function(ticks, gap, numberOfGaps, theme) {
       
       // remove all ticks
       ticks.empty();
@@ -20,12 +20,12 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
         
         var tick = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
         tick.attr({ 'x1': x, 'y1': 0, 'x2': x, 'y2': 10 });
-        tick.css({ 'stroke': '#C0D0E0', 'stroke-width': 1 });
+        tick.css({ 'stroke': theme.tickColor, 'stroke-width': theme.tickWidth });
         tick.appendTo(g);
         
         var label = $(document.createElementNS('http://www.w3.org/2000/svg', 'text'));
         label.attr({ 'x': x, 'y': 20 });
-        label.css({ 'color': '#606060', 'cursor': 'default', 'fontSize': '11px', 'fill': '#606060' });
+        label.css({ 'color': theme.labelColor, 'cursor': 'default', 'fontSize': theme.labelSize, 'fill': theme.labelColor });
         
         var text = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
         text.attr({ 'x': x, 'text-anchor': 'middle' });
@@ -41,30 +41,31 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
    * Default constructor...
    */
   TimeAxis = function() {
+    this.width = 0;
+    this.gap = 0;
+    this.relativeMove = 0;
+    this.size = { 
+      height: 0, 
+      width: 0 
+    };
+    this.settings = {
+      type: null,
+      rawstart: null,
+      rawend: null,
+      last: null,
+      level: null
+    };
+    this.view = {
+      position: 0,
+      size: 0, 
+      total: 0
+    };
   };
   
   /*
    * Extended prototype
    */
   TimeAxis.prototype = {
-    axis: null,
-    sepLine: null,
-    ticks: null,
-    width: 0,
-    gap: 0,
-    size: { height: 0, width: 0 },
-    settings: {
-      type: null,
-      rawstart: null,
-      rawend: null,
-      last: null,
-      level: null
-    },
-    view: {
-      position: 0,
-      size: 0, 
-      total: 0
-    },
     defaultCfg: {
       tickInterval: null,
       formatter: function(value, type, level) {
@@ -94,12 +95,16 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
               break;
           };
           
-          return datelib.format(value, format);
+          return datelib.formatUTC(value, format);
         } else {
           return value;
         }
       },
       theme: {
+        tickColor: '#C0D0E0',
+        tickWidth: 1,
+        labelColor: '#606060',
+        labelSize: '11px'
       }
     },
     
@@ -136,7 +141,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
       } else {
         this.width = width;
       }
-            
+
       this.sepLine.attr({ 'x2': width });
       
       // force a redraw of the marker
@@ -175,28 +180,28 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
       var tickInterval;
       if (typeof(this.opts.tickInterval) == 'undefined' || this.opts.tickInterval == null) {
         tickInterval = 1;
-        while ((numberOfGaps = Math.max(1, Math.ceil((size - 1) / tickInterval))) > 20) {
+        while ((numberOfGaps = Math.max(1, Math.ceil((size) / tickInterval))) > 20) {
           tickInterval++;
         }
       } else {
-        numberOfGaps = Math.max(1, Math.ceil((size - 1) / tickInterval));
         tickInterval = this.opts.tickInterval;
+        numberOfGaps = Math.max(1, Math.ceil((size) / tickInterval));
       }
 
       // determine the ratio of one pos value to the pixels
       var totalWidth = this.getTotalWidth();
       var ratio = total == 0 ? 0 : totalWidth / (total - 1);
       
-      // use the ratio to calculate the size of the gap
+      // use the ratio to calculate the size of the gap and the relativeMove
       this.gap = tickInterval * ratio;
+      this.relativeMove = this.gap == 0 ? 0 : -1 * ((position * ratio) % this.gap);
       
       // move the axis based on the current position
-      var relativeMove = this.gap == 0 ? 0 : -1 * ((position * ratio) % this.gap);
-      this.ticks.attr({ 'transform': 'translate(' + relativeMove + ', 0)' });
+      this.ticks.attr({ 'transform': 'translate(' + this.relativeMove + ', 0)' });
 
       // redraw the ticks if needed
       if (redrawTicks) {
-        utilities.drawTicks(this.ticks, this.gap, numberOfGaps);
+        utilities.drawTicks(this.ticks, this.gap, numberOfGaps, this.opts.theme);
       }
       
       // add the number of the labels
@@ -205,13 +210,12 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
       var _ref = this;
       this.ticks.find('g').each(function(idx, el) {
         var tickGroup = $(el);
-        
+
         // check if the first one is currently used
-        if (idx == 0 && relativeMove < -0.5 * _ref.gap) {
+        if (idx == 0 && _ref.relativeMove <= -0.5 * _ref.gap) {
           tickGroup.removeAttr('data-index');
         } else {
           var pos = start + i * tickInterval;
-
           if (pos < 0 || pos > _ref.settings.last) {
             tickGroup.removeAttr('data-index');
           } else {
@@ -220,19 +224,21 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
           i++;
         }
       });
+            
+      // trigger the event if there was a change
+      if (changed) {
+        var data = _ref.getViewPositions();
+        data.rawstart = this.getRawValue(data.start);
+        data.rawend = this.getRawValue(data.end);
+        
+        data.axis = this;
+
+        // get the rawValues
+        this.axis.trigger('viewchange', data);
+      }
       
       // make sure the labels are fixed
       this.ticks.trigger('labelchange');
-      
-      // trigger the event if there was a change
-      if (changed) {
-        var pos = _ref.getViewPositions();
-        pos.rawStart = this.getRawValue(pos.start);
-        pos.rawEnd = this.getRawValue(pos.end);
-                
-        // get the rawValues
-        this.axis.trigger('viewchange', pos);
-      }
     },
     
     getTotalWidth: function() {
@@ -272,7 +278,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
       var size = { 'height': bbox.height, 'width': bbox.width };
       if (this.size.height != size.height || this.size.width != size.width) {
         this.size = size;
-        this.axis.trigger('sizechange', this);
+        this.axis.trigger('sizechanged', this);
       }
     },
     
@@ -348,38 +354,42 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
         return pos;
       }
     },
-    
+            
     getPos: function(rawValue) {
-
       var pos;
-      if (this.settings.type == 'number') {
-        
-        // check if we are out of bound
-        if (rawValue < this.settings.rawstart) {
-          return -1;
-        } else if (rawValue > this.settings.rawend) {
-          return -2;
-        }
-        
+      if (this.settings.type == 'number') {        
         pos = rawValue - this.settings.rawstart;
-      } else if (this.settings.type == 'date') {
-
-        // check if we are out of bound
-        if (rawValue.getTime() < this.settings.rawstart.getTime()) {
-          return -1;
-        } else if (rawValue.getTime() > this.settings.rawend.getTime()) {
-          return -2;
-        }
-        
-        pos = datelib.distanceUTC(this.settings.rawstart, rawValue, this.settings.level);
+      } else if (this.settings.type == 'date') {        
+        pos = datelib.distanceUTC(this.settings.rawstart, rawValue, this.settings.level, true);
       } else {
         return null;
       }
-
+      
+      return pos;
+    },
+    
+    getPixelPos: function(rawValue) {
+      var pos = this.getPos(rawValue);
+      return this.getPixelPosOfPos(pos);
+    },
+    
+    getPixelPosOfPos: function(pos) {
       var totalWidth = this.getTotalWidth();
       var ratio = this.view.total == 0 ? 0 : totalWidth / (this.view.total - 1);
 
-      return pos * ratio;
+      return pos * ratio + this.relativeMove;
+    },
+    
+    getRelativePixelPosOfPos: function(pos) {
+      var pxAxisStartPos = this.getPixelPosOfPos(this.view.position);
+      var pxPos = this.getPixelPosOfPos(pos);
+      
+      return pxPos - pxAxisStartPos;
+    },
+    
+    getRelativePixelPos: function(rawValue) {
+      var pos = this.getPos(rawValue);      
+      return this.getRelativePixelPosOfPos(pos);
     },
     
     setAxis: function(start, end, level, force) {
