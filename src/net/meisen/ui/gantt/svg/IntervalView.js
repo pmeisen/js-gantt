@@ -1,4 +1,4 @@
-define(['jquery'], function ($) {
+define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrary) {
   
   var util = {
     
@@ -14,6 +14,62 @@ define(['jquery'], function ($) {
        * after the decimal.
        */
       return '_' + Math.random().toString(36).substr(2, 9);
+    },
+    
+    validateScale: function(el) {
+      var scaleX = el.attr('data-scaleX');
+      var scaleY = el.attr('data-scaleY');
+      
+      if (typeof(scaleX) == 'undefined' && typeof(scaleY) == 'undefined') {
+        return;
+      } else {
+        scaleX = typeof(scaleX) == 'undefined' ? 1 : scaleX;
+        scaleY = typeof(scaleY) == 'undefined' ? 1 : scaleY;
+        
+        el.children().each(function() {
+          var childEl = $(this);
+          var tagName = childEl.prop('tagName');
+          var modX = childEl.attr('data-modX');
+          var modY = childEl.attr('data-modY');
+          
+          if (tagName == 'line' && (modX != scaleX || modY != scaleY)) {
+            util.doScale(childEl, scaleX, scaleY);
+          }
+        });
+      }
+    },
+    
+    doScale: function(el, x, y) {
+      var tagName = el.prop('tagName');
+      
+      if (tagName == 'g') {
+        el.children().each(function() { util.doScale($(this), x, y); });
+        el.attr({ 'data-scaleX': x, 'data-scaleY': y });
+      } else if (tagName == 'line') {
+        
+        // get the older modifications
+        var modX = el.attr('data-modX');
+        modX = typeof(modX) == 'undefined' ? 1 : modX;
+        var modY = el.attr('data-modY');
+        modY = typeof(modY) == 'undefined' ? 1 : modY;
+        if (x == modX && y == modY) {
+          return;
+        }
+        
+        // get the values
+        var x1 = el.attr('x1');
+        x1 = typeof(x1) == 'undefined' ? 0 : x1;
+        var x2 = el.attr('x2');
+        x2 = typeof(x2) == 'undefined' ? 0 : x2;
+        var y1 = el.attr('y1');
+        y1 = typeof(y1) == 'undefined' ? 0 : y1;
+        var y2 = el.attr('y2');
+        y2 = typeof(y2) == 'undefined' ? 0 : y2;
+        
+        el.attr( { 'data-modX': x, 'data-modY': y, 'x1': (x1 / modX) * x, 'x2': (x2 / modX) * x, 'y1': (y1 / modY) * y, 'y2': (y2 / modY) * y });
+      } else {
+        svgLibrary.modifyTransform(el, 'scale', x + ',' + y);
+      }
     }
   };
   
@@ -24,6 +80,11 @@ define(['jquery'], function ($) {
     this.intervalCollection = null;
     this.resolver = null;
     
+    this.view = null;
+    this.clipArea = null;
+    this.background = null;
+    this.grid = null;
+    
     this.width = 0;
     this.height = 0;
   };
@@ -33,6 +94,7 @@ define(['jquery'], function ($) {
    */
   IntervalView.prototype = {
     defaultCfg: {
+      showGrid: true,
       theme: {
         backgroundColor: '#FFFFFF',
         
@@ -42,6 +104,12 @@ define(['jquery'], function ($) {
         intervalColor: '#FF00FF',
         intervalBorderColor: '#00FF00',
         intervalBorderSize: 1,
+        
+        gridColor: '#D8D8D8',
+        gridSize: 1,
+        
+        borderColor: '#D8D8D8',
+        borderSize: 1,
         
         intervalMarginInPx: null
       }
@@ -83,9 +151,23 @@ define(['jquery'], function ($) {
       this.view.attr('clip-path', 'url(#' + clipPathId + ')');
       this.view.appendTo(canvas);
 
-      this.area = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
-      this.area.css({ 'fill': this.opts.theme.backgroundColor });
-      this.area.appendTo(this.view);
+      this.background = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+      this.background.appendTo(this.view);
+      
+      var bgRect = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+      bgRect.attr({ 'x': 0, 'y': 0, 'height': 1, 'width': 1 });
+      bgRect.css({ 'fill': this.opts.theme.backgroundColor });
+      bgRect.appendTo(this.background);
+      
+      var topLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+      topLine.attr({ 'x1': 0, 'y1': 0, 'x2': 1, 'y2': 0, 'z-index': 100 });
+      topLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
+      topLine.appendTo(this.background);
+      
+      var bottomLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+      bottomLine.attr({ 'x1': 0, 'y1': 1, 'x2': 1, 'y2': 1, 'z-index': 100 });
+      bottomLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
+      bottomLine.appendTo(this.background);
     },
     
     setData: function(intervalCollection, map) {
@@ -94,6 +176,14 @@ define(['jquery'], function ($) {
     },
     
     setPosition: function(x, y) {
+      
+      /*
+       * Nicer sharper look, see:
+       * http://stackoverflow.com/questions/18019453/svg-rectangle-blurred-in-all-browsers
+       */
+      x = Math.floor(x) + 0.5;
+      y = Math.floor(y) + 0.5;
+      
       this.view.attr({ 'transform': 'translate(' + x + ', ' + y + ')' });
     },
     
@@ -110,9 +200,15 @@ define(['jquery'], function ($) {
         this.width = width;
         this.height = height;
       }
-      
-      this.area.attr({ 'width': width, 'height': height });
       this.clipArea.attr({ 'width': width, 'height': height });
+      
+      // modify the grid and the background
+      if (this.grid != null) {
+        util.doScale(this.grid, width, 1);
+      }
+      if (this.background != null) {
+        util.doScale(this.background, width, height);
+      }
       
       // just trigger the final drawing as finished
       if (changed) {
@@ -154,19 +250,22 @@ define(['jquery'], function ($) {
       
       // calculate height, laneHeight, margin and offset
       var height = this.opts.theme.intervalBorderSize * 2 + this.opts.theme.intervalHeight;
-      var laneHeight = Math.max(height, this.opts.theme.laneHeight == null ? 1.5 * height : this.opts.theme.laneHeight);
-      var intervalMarginInPx = this.opts.theme.intervalMarginInPx == null ? 0.5 * laneHeight : this.opts.theme.intervalMarginInPx;
-      var offset = -1 * top * laneHeight;
+      var swimlaneHeight = Math.max(height, this.opts.theme.laneHeight == null ? 1.5 * height : this.opts.theme.laneHeight);
+      var swimlanesCount = this.height / swimlaneHeight;
+      var intervalMarginInPx = this.opts.theme.intervalMarginInPx == null ? 0.5 * swimlaneHeight : this.opts.theme.intervalMarginInPx;
+      var offset = -1 * top * swimlaneHeight;
       if (this.opts.theme.intervalPosition == 'top') {
         offset += 0;
       } else if (this.opts.theme.intervalPosition == 'bottom') {
-        offset += laneHeight - height;
+        offset += swimlaneHeight - height;
       } else {
-        offset += 0.5 * (laneHeight - height); 
+        offset += 0.5 * (swimlaneHeight - height); 
       }
+      
+      // draw the lines
+      this.drawSwimlanes((Math.floor(top) - top) * swimlaneHeight, swimlanesCount, swimlaneHeight);
 
       // iterate over intervals and create a 'new' or 'reuse' one
-      var swimlanesView = this.height / laneHeight;
       var swimlanesTotal = 0;
       var intervalsLen = intervals.length;
       var swimlanesXPoses = [];
@@ -195,7 +294,7 @@ define(['jquery'], function ($) {
         if (swimlane >= Math.floor(top) && swimlane <= Math.ceil(bottom)) {
           var borderedX = x1 + this.opts.theme.intervalBorderSize;
           var borderedWidth = Math.max(0.1, width - 2 * this.opts.theme.intervalBorderSize);
-          this.layoutRepresentor(interval, borderedX, swimlane * laneHeight + offset, borderedWidth, processId);
+          this.layoutRepresentor(interval, borderedX, swimlane * swimlaneHeight + offset, borderedWidth, processId);
         }
       }
 
@@ -203,7 +302,35 @@ define(['jquery'], function ($) {
       this.view.children('[data-processId][data-processId!=' + processId + ']').remove();
       
       // fire the view-change event
-      this.view.trigger('viewchange', { start: start, end: end, top: top, bottom: bottom, swimlanesView: swimlanesView, swimlanesTotal: swimlanesTotal });
+      this.view.trigger('viewchange', { start: start, end: end, top: top, bottom: bottom, swimlanesView: swimlanesCount, swimlanesTotal: swimlanesTotal });
+    },
+    
+    drawSwimlanes: function(offset, swimlanesCount, swimlaneHeight) {
+      
+      // only draw new lines if changed
+      if (this.swimlanesCount != swimlanesCount || this.swimlanesHeight != swimlaneHeight) {
+        if (this.grid == null) {
+          this.grid = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+          this.grid.appendTo(this.view);
+        }
+        
+        // remove the grid, because it was changed
+        this.grid.empty();
+        
+        for (var i = 0; i < swimlanesCount + 1; i++) {
+          var line = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+          var y = swimlaneHeight * i;
+          
+          line.attr({ 'x1': 0, 'y1': y, 'x2': 1, 'y2': y, 'z-index': 1 });
+          line.css({ 'stroke': this.opts.theme.gridColor, 'stroke-width': this.opts.theme.gridSize });
+          
+          line.appendTo(this.grid);
+        }
+        util.validateScale(this.grid);
+      }
+      
+      // position the grid according to the defined offset
+      svgLibrary.modifyTransform(this.grid, 'translate', '0, ' + offset);
     },
     
     layoutRepresentor: function(interval, x, y, width, processId) {

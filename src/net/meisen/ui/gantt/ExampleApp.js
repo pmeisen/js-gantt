@@ -38,7 +38,6 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
           },
           view: {
             theme: {
-              backgroundColor: '#DDDDDD',
               intervalColor: '#444444',
               intervalHeight: 40,
               intervalBorderSize: 0
@@ -82,7 +81,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
           },
           view: {
             theme: {
-              backgroundColor: '#DDDDDD',
+              backgroundColor: '#EEEEEE',
               intervalColor: '#444444',
               intervalHeight: 10,
               intervalBorderSize: 0

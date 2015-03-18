@@ -160,6 +160,14 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
     },
     
     setPosition: function(x, y) {
+      
+      /*
+       * Nicer sharper look, see:
+       * http://stackoverflow.com/questions/18019453/svg-rectangle-blurred-in-all-browsers
+       */
+      x = Math.floor(x) + 0.5;
+      y = Math.floor(y) + 0.5;
+      
       this.bar.attr({ 'transform': 'translate(' + x + ', ' + y + ')' });
     },
     
@@ -302,7 +310,7 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
       var _ref = this;
       el.on(eventName, function(e) {
         var oEvent = e.originalEvent;
-        var delta  = oEvent.deltaY || oEvent.wheelDelta;
+        var delta  = oEvent.deltaY || (-1 * oEvent.wheelDelta);
         
         var direction = delta > 0 ? 'bottom' : 'top';
         var oldPos = _ref.view.position;

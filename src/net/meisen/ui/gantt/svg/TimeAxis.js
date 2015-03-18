@@ -321,9 +321,6 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
           // set the new text
           tspanMain.text(formattedText.substring(0, pos));
           tspanSub.text(formattedText.substring(pos + 1));
-          
-          // do some formatting
-          var bboxMain = tspanMain.get(0).getBBox();
           tspanSub.attr({ 'text-anchor': 'middle', 'x': tspanMain.attr('x'), 'dy': 13 });
         }
       } else if (tspans.size() > 1) {
@@ -340,6 +337,13 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
     },
     
     setPosition: function(x, y) {
+      
+      /*
+       * Nicer sharper look, see:
+       * http://stackoverflow.com/questions/18019453/svg-rectangle-blurred-in-all-browsers
+       */
+      x = Math.floor(x) + 0.5;
+      y = Math.floor(y) + 0.5;
       this.axis.attr({ 'transform': 'translate(' + x + ', ' + y + ')' });
     },
     

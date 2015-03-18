@@ -64,7 +64,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
       this.intervalCollection = new IntervalCollection();
       
       this.canvas = $(document.createElementNS('http://www.w3.org/2000/svg', 'svg'));
-      this.canvas.attr('version', '1.1')
+      this.canvas.attr('version', '1.1');
       this.canvas.css('fontFamily', this.opts.theme.fontFamily);
       this.canvas.css('fontSize', this.opts.theme.fontSize);
       this.canvas.css('cursor', 'default');
