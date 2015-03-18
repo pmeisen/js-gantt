@@ -210,6 +210,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
       for (var i = 0; i < records.length; i++) {
         var record = records[i];
         var interval = new Interval(record[map.start], record[map.end]);
+        interval.set(IntervalView.gRawAttr, record);
         intervals.push(interval);
       }
       this.intervalCollection.insertAll(intervals);

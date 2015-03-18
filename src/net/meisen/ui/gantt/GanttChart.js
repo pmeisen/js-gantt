@@ -23,7 +23,44 @@ define(['jquery',
       var mappedTooltip = this.createArray(tooltip.length, -1);
       
       // create the initial map
-      var map = { start: -1, end: -1, group: mappedGroup, label: mappedLabel, tooltip: mappedTooltip };
+      var map = { 
+        start: -1, 
+        end: -1, 
+        group: mappedGroup, 
+        label: mappedLabel, 
+        tooltip: mappedTooltip, 
+        
+        get: function(type, record) {
+          
+          // get the array
+          var arr = null;
+          if (type == 'group') {
+            arr = this.group;
+          } else if (type == 'label') {
+            arr = this.label;
+          } else if (type == 'tooltip') {
+            arr = this.tooltip;
+          } else {
+            arr = null;
+          }
+          
+          // make sure we have something
+          var len = arr.length;
+          if (arr == null || len == 0) {
+            return [];
+          } else {
+            
+            var vals = [];
+            for (var i = 0; i < len; i++) {
+              var val = record[arr[i]];
+              vals.push(val);
+            }
+            console.log(vals);
+            return vals;
+            
+          }
+        }
+      };
       
       // get the arrays to look through
       var arrays = [
@@ -55,7 +92,10 @@ define(['jquery',
         }
       }
       $.each(map, function(key, value) {
-        if ($.isArray(value)) {
+        
+        if ($.isFunction(value)) {
+          // nothing to do
+        } else if ($.isArray(value)) {
           $.each(value, function(idx, val) {
             validateValue(val);
           });

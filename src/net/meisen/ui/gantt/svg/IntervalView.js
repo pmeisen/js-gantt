@@ -89,19 +89,53 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
     this.height = 0;
   };
   
+  IntervalView.guidAttr = '_guid';
+  IntervalView.gPositionAttr = '_pos';
+  IntervalView.gColor = '_color';
+  IntervalView.gRawAttr = '_raw';
+  
   /**
    * Extended prototype
    */
   IntervalView.prototype = {
     defaultCfg: {
       showGrid: true,
+      
+      coloring: {
+        groupMapping: null,
+        colorizer: function(interval, map, defaultColor) {
+
+          // make sure there is something to do
+          if (this.groupMapping == null || !$.isPlainObject(this.groupMapping)) {
+            return defaultColor;
+          }
+          
+          // get the value
+          var raw = interval.get(IntervalView.gRawAttr);
+          var group = map.get('group', raw);
+          
+          // if nothing is defined just return the default
+          if (group == null) {
+            return defaultColor;
+          }
+          
+          // create the representative
+          var strGroup = JSON.stringify(group);
+          if (this.groupMapping.hasOwnProperty(strGroup)) {
+            return this.groupMapping[strGroup];
+          } else {
+            return defaultColor;
+          }
+        }
+      },
+      
       theme: {
         backgroundColor: '#FFFFFF',
         
         laneHeight: null,
         intervalPosition: 'middle',
         intervalHeight: 10,
-        intervalColor: '#FF00FF',
+        intervalColor: '#7CB5EC',
         intervalBorderColor: '#00FF00',
         intervalBorderSize: 1,
         
@@ -114,9 +148,6 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         intervalMarginInPx: null
       }
     },
-    
-    guidAttr: '_guid',
-    gPositionAttr: '_gpos',
     
     init: function(canvas, cfg) {
       this.opts = $.extend(true, {}, this.defaultCfg, cfg);
@@ -168,6 +199,16 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       bottomLine.attr({ 'x1': 0, 'y1': 1, 'x2': 1, 'y2': 1, 'z-index': 100 });
       bottomLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
       bottomLine.appendTo(this.background);
+      
+      var leftLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+      leftLine.attr({ 'x1': 0, 'y1': 0, 'x2': 0, 'y2': 1, 'z-index': 100 });
+      leftLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
+      leftLine.appendTo(this.background);
+      
+      var rightLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+      rightLine.attr({ 'x1': 1, 'y1': 0, 'x2': 1, 'y2': 1, 'z-index': 100 });
+      rightLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
+      rightLine.appendTo(this.background);
     },
     
     setData: function(intervalCollection, map) {
@@ -263,7 +304,9 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       }
       
       // draw the lines
-      this.drawSwimlanes((Math.floor(top) - top) * swimlaneHeight, swimlanesCount, swimlaneHeight);
+      if (this.opts.showGrid) {
+        this.drawSwimlanes((Math.floor(top) - top) * swimlaneHeight, swimlanesCount, swimlaneHeight);
+      }
 
       // iterate over intervals and create a 'new' or 'reuse' one
       var swimlanesTotal = 0;
@@ -281,7 +324,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         /*
          * Check if we currently have a swimlane.
          */
-        var swimlane = interval.get(this.gPositionAttr);
+        var swimlane = interval.get(IntervalView.gPositionAttr);
         if (typeof(swimlane) == 'undefined' || swimlane == null) {    
           swimlane = this.determineSwimlane(swimlanesXPoses, interval, x1, intervalMarginInPx);
         }
@@ -336,24 +379,32 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
     layoutRepresentor: function(interval, x, y, width, processId) {
       
       // check if we have a guid
-      var guid = interval.get(this.guidAttr);
+      var guid = interval.get(IntervalView.guidAttr);
       
       // get the representor for the guid
       var representor = null;
       if (typeof(guid) == 'undefined' || guid == null) {
         guid = util.randomId();
-        interval.set(this.guidAttr, guid);
+        interval.set(IntervalView.guidAttr, guid);
       } else {
         representor = this.view.children('#' + guid);
       }
       
       // generate a new representor if we didn't find one or none was there
       if (representor == null || representor.size() == 0) {
+        
+        // get the color and keep it if we got it
+        var color = interval.get(IntervalView.gColor);
+        if (typeof(color) == 'undefined' || color == null) {
+          color = this.opts.coloring.colorizer(interval, this.map, this.opts.theme.intervalColor);
+          interval.set(IntervalView.gColor, color);
+        }
+        
         representor = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
         representor.attr({ 'id': guid, 'height': this.opts.theme.intervalHeight });
         representor.css({ 
           'stroke': this.opts.theme.intervalBorderColor, 'stroke-width': this.opts.theme.intervalBorderSize,
-          'fill': this.opts.theme.intervalColor
+          'fill': color
         });
                 
         representor.appendTo(this.view);
@@ -388,7 +439,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       }
       
       // set the selected position for the interval
-      interval.set(this.gPositionAttr, swimlane);
+      interval.set(IntervalView.gPositionAttr, swimlane);
       
       return swimlane;
     },

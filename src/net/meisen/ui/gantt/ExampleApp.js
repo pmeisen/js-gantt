@@ -37,8 +37,9 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
             tickInterval: 120
           },
           view: {
+            showGrid: false,
             theme: {
-              intervalColor: '#444444',
+              intervalColor: '#f7a35c',
               intervalHeight: 40,
               intervalBorderSize: 0
             }
@@ -80,6 +81,14 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
             tickInterval: 720
           },
           view: {
+            coloring: {
+              groupMapping: {
+                '["Female","Female"]': '#7cb5ec',
+                '["Male","Female"]': '#434348',
+                '["Female","Male"]': '#f7a35c',
+                '["Male","Male"]': '#90ed7d'
+              }
+            },
             theme: {
               backgroundColor: '#EEEEEE',
               intervalColor: '#444444',
