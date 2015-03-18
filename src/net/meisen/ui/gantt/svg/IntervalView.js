@@ -66,7 +66,20 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         var y2 = el.attr('y2');
         y2 = typeof(y2) == 'undefined' ? 0 : y2;
         
-        el.attr( { 'data-modX': x, 'data-modY': y, 'x1': (x1 / modX) * x, 'x2': (x2 / modX) * x, 'y1': (y1 / modY) * y, 'y2': (y2 / modY) * y });
+        // get possible ignores
+        var ignore = el.attr('data-ignorescale');
+        var ignoreX = typeof(ignore) == 'undefined' ? false : ignore.indexOf('x') > -1;
+        var ignoreY = typeof(ignore) == 'undefined' ? false : ignore.indexOf('y') > -1;
+                
+        if (ignoreX && ignoreY) {
+          // nothing to do
+        } else if (ignoreX) {
+          el.attr( { 'data-modY': y, 'y1': (y1 / modY) * y, 'y2': (y2 / modY) * y });
+        } else if (ignoreY) {
+          el.attr( { 'data-modX': x, 'x1': (x1 / modX) * x, 'x2': (x2 / modX) * x });
+        } else {
+          el.attr( { 'data-modX': x, 'data-modY': y, 'x1': (x1 / modX) * x, 'x2': (x2 / modX) * x, 'y1': (y1 / modY) * y, 'y2': (y2 / modY) * y });
+        }
       } else {
         svgLibrary.modifyTransform(el, 'scale', x + ',' + y);
       }
@@ -100,6 +113,8 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
   IntervalView.prototype = {
     defaultCfg: {
       showGrid: true,
+      showBorder: true,
+      showBackground: true,
       
       coloring: {
         groupMapping: null,
@@ -142,6 +157,9 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         gridColor: '#D8D8D8',
         gridSize: 1,
         
+        markerColor: '#D8D8D8',
+        markerSize: 1,
+        
         borderColor: '#D8D8D8',
         borderSize: 1,
         
@@ -179,41 +197,94 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       
       // create the view
       this.view = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+      this.view.attr('class', 'gantt-view-container');
       this.view.attr('clip-path', 'url(#' + clipPathId + ')');
       this.view.appendTo(canvas);
 
+      // create the background of the view
       this.background = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+      this.background.attr('class', 'gantt-view-background');
       this.background.appendTo(this.view);
+            
+      // create a rectangle for the background
+      if (this.opts.showBackground && this.opts.theme.backgroundColor != null) {
+        var bgRect = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+        bgRect.attr({ 'x': 0, 'y': 0, 'height': 1, 'width': 1 });
+        bgRect.css({ 'fill': this.opts.theme.backgroundColor });
+        bgRect.appendTo(this.background);
+      }
       
-      var bgRect = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
-      bgRect.attr({ 'x': 0, 'y': 0, 'height': 1, 'width': 1 });
-      bgRect.css({ 'fill': this.opts.theme.backgroundColor });
-      bgRect.appendTo(this.background);
+      // create the data container
+      this.data = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+      this.data.attr('class', 'gantt-view-data');
+      this.data.appendTo(this.view);
       
-      var topLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
-      topLine.attr({ 'x1': 0, 'y1': 0, 'x2': 1, 'y2': 0, 'z-index': 100 });
-      topLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
-      topLine.appendTo(this.background);
+      // create the foreground of the view
+      this.foreground = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+      this.foreground.attr('class', 'gantt-view-foreground');
+      this.foreground.appendTo(this.view);
       
-      var bottomLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
-      bottomLine.attr({ 'x1': 0, 'y1': 1, 'x2': 1, 'y2': 1, 'z-index': 100 });
-      bottomLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
-      bottomLine.appendTo(this.background);
+      // create a border if needed
+      if (this.opts.showBorder) {
+        var topLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+        topLine.attr({ 'x1': 0, 'y1': 0, 'x2': 1, 'y2': 0 });
+        topLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
+        topLine.appendTo(this.foreground);
+        
+        var bottomLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+        bottomLine.attr({ 'x1': 0, 'y1': 1, 'x2': 1, 'y2': 1 });
+        bottomLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
+        bottomLine.appendTo(this.foreground);
+        
+        var leftLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+        leftLine.attr({ 'x1': 0, 'y1': 0, 'x2': 0, 'y2': 1 });
+        leftLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
+        leftLine.appendTo(this.foreground);
+        
+        var rightLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+        rightLine.attr({ 'x1': 1, 'y1': 0, 'x2': 1, 'y2': 1 });
+        rightLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
+        rightLine.appendTo(this.foreground);
+      }
       
-      var leftLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
-      leftLine.attr({ 'x1': 0, 'y1': 0, 'x2': 0, 'y2': 1, 'z-index': 100 });
-      leftLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
-      leftLine.appendTo(this.background);
+      // create the container for the mouse-move stuff
+      this.mousemoveMask = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+      this.mousemoveMask.attr('class', 'gantt-view-mousemovemask');
+      this.mousemoveMask.appendTo(canvas);
       
-      var rightLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
-      rightLine.attr({ 'x1': 1, 'y1': 0, 'x2': 1, 'y2': 1, 'z-index': 100 });
-      rightLine.css({ 'stroke': this.opts.theme.borderColor, 'stroke-width': this.opts.theme.borderSize });
-      rightLine.appendTo(this.background);
+      // create invisible mask for mouse-over
+      var _ref = this;
+      var moveArea = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+      moveArea.attr({ 'x': 0, 'y': 0, 'height': 1, 'width': 1 });
+      moveArea.css({ 'fill-opacity': 0.0 });
+      moveArea.on('mousemove', function(e) {
+        _ref.showPositionMarker(e.pageX);
+      });
+      moveArea.appendTo(this.mousemoveMask);
     },
     
     setData: function(intervalCollection, map) {
       this.intervalCollection = intervalCollection;
       this.map = map;
+    },
+    
+    showPositionMarker: function(posX, relative) {
+      relative = typeof(relative) == 'undefined' || relative == null ? false : relative;
+
+      if (this.positionMarker == null) {
+        this.positionMarker = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+        this.positionMarker.attr({ 'data-ignorescale': 'x', 'x1': 0, 'x2': 0, 'y1': 0, 'y2': 1 });
+        this.positionMarker.css({ 'stroke': this.opts.theme.markerColor, 'stroke-width': this.opts.theme.markerSize });
+        this.positionMarker.appendTo(this.mousemoveMask);
+        
+        // make sure the scaling is right
+        util.validateScale(this.mousemoveMask);
+      }
+      
+      // this.positionMarker.css('visibility', 'hidden');
+      var relPos = relative ? posX : posX - this.mousemoveMask.offset().left;
+      this.positionMarker.attr({ 'x1': relPos, 'x2': relPos });
+      this.positionMarker.css('visibility', 'visible');
     },
     
     setPosition: function(x, y) {
@@ -225,7 +296,10 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       x = Math.floor(x) + 0.5;
       y = Math.floor(y) + 0.5;
       
-      this.view.attr({ 'transform': 'translate(' + x + ', ' + y + ')' });
+      var translate = x + ', ' + y;
+      
+      svgLibrary.modifyTransform(this.view, 'translate', translate);
+      svgLibrary.modifyTransform(this.mousemoveMask, 'translate', translate);
     },
     
     setSize: function(width, height, force) {
@@ -243,13 +317,13 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       }
       this.clipArea.attr({ 'width': width, 'height': height });
       
-      // modify the grid and the background
-      if (this.grid != null) {
-        util.doScale(this.grid, width, 1);
-      }
-      if (this.background != null) {
-        util.doScale(this.background, width, height);
-      }
+      // modify the different groups
+      var groups = [ this.background, this.foreground, this.mousemoveMask, this.grid ];
+      $.each(groups, function(idx, val) {
+        if (val != null) {
+          util.doScale(val, width, height);
+        }
+      });
       
       // just trigger the final drawing as finished
       if (changed) {
@@ -334,7 +408,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         swimlanesXPoses[swimlane] = x2;
 
         // layout the representor, if visible
-        if (swimlane >= Math.floor(top) && swimlane <= Math.ceil(bottom)) {
+        if (swimlane >= Math.floor(top) && swimlane < Math.ceil(bottom)) {
           var borderedX = x1 + this.opts.theme.intervalBorderSize;
           var borderedWidth = Math.max(0.1, width - 2 * this.opts.theme.intervalBorderSize);
           this.layoutRepresentor(interval, borderedX, swimlane * swimlaneHeight + offset, borderedWidth, processId);
@@ -342,7 +416,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       }
 
       // remove all the unneeded lines
-      this.view.children('[data-processId][data-processId!=' + processId + ']').remove();
+      this.data.children('[data-processId][data-processId!=' + processId + ']').remove();
       
       // fire the view-change event
       this.view.trigger('viewchange', { start: start, end: end, top: top, bottom: bottom, swimlanesView: swimlanesCount, swimlanesTotal: swimlanesTotal });
@@ -354,6 +428,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       if (this.swimlanesCount != swimlanesCount || this.swimlanesHeight != swimlaneHeight) {
         if (this.grid == null) {
           this.grid = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+          this.grid.attr('class', 'gantt-view-grid');
           this.grid.appendTo(this.view);
         }
         
@@ -364,7 +439,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
           var line = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
           var y = swimlaneHeight * i;
           
-          line.attr({ 'x1': 0, 'y1': y, 'x2': 1, 'y2': y, 'z-index': 1 });
+          line.attr({ 'x1': 0, 'y1': y, 'x2': 1, 'y2': y, 'data-ignorescale': 'y' });
           line.css({ 'stroke': this.opts.theme.gridColor, 'stroke-width': this.opts.theme.gridSize });
           
           line.appendTo(this.grid);
@@ -387,7 +462,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         guid = util.randomId();
         interval.set(IntervalView.guidAttr, guid);
       } else {
-        representor = this.view.children('#' + guid);
+        representor = this.data.children('#' + guid);
       }
       
       // generate a new representor if we didn't find one or none was there
@@ -407,7 +482,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
           'fill': color
         });
                 
-        representor.appendTo(this.view);
+        representor.appendTo(this.data);
       }
       representor.attr({ 'data-processId': processId });
 

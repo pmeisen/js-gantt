@@ -49,15 +49,12 @@ define(['jquery',
           if (arr == null || len == 0) {
             return [];
           } else {
-            
             var vals = [];
             for (var i = 0; i < len; i++) {
               var val = record[arr[i]];
               vals.push(val);
             }
-            console.log(vals);
             return vals;
-            
           }
         }
       };

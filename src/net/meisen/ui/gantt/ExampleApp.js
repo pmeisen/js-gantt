@@ -81,6 +81,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
             tickInterval: 720
           },
           view: {
+            showBorder: false,
             coloring: {
               groupMapping: {
                 '["Female","Female"]': '#7cb5ec',

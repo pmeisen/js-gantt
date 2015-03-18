@@ -11,6 +11,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
         var x = i * gap;
         
         var g = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+        g.attr('class', 'gantt-timeaxis-text');
         g.css({ '-webkit-touch-callout' : 'none', 
                 '-webkit-user-select' : 'none', 
                 '-khtml-user-select' : 'none', 
@@ -112,6 +113,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
       this.opts = $.extend(true, {}, this.defaultCfg, cfg);
       
       this.axis = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+      this.axis.attr('class', 'gantt-timeaxis-container');
 
       // create a separating line
       this.sepLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
@@ -121,6 +123,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
       
       // create the group of the ticks
       this.ticks = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+      this.ticks.attr('class', 'gantt-timeaxis-ticks');
       this.ticks.appendTo(this.axis);
       
       var _ref = this;

@@ -103,6 +103,14 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
         _ref.setLayoutStatus('timeaxis', true);
       });
       
+      // create a scrollbar for the view's swim-lanes
+      this.scrollbar2 = new Scrollbar('vertical');
+      this.scrollbar2.init(this.canvas, { hideOnNoScroll: false });
+      this.scrollbar2.on('viewchange', function(event, data) {
+        _ref.intervalview.setView(null, null, data.position, data.position + data.size, _ref.timeaxis);
+      });
+      this.scrollbar2.bindToWheel(this.panel);
+      
       // create the view
       this.intervalview = new IntervalView();
       this.intervalview.setResolver(this.timeaxis);
@@ -114,14 +122,8 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
           _ref.scrollbar2.setView(data.top, data.swimlanesView, data.swimlanesTotal);
       });
       
-      // create a scrollbar for the view's swim-lanes
-      this.scrollbar2 = new Scrollbar('vertical');
-      this.scrollbar2.init(this.canvas, { hideOnNoScroll: false });
-      this.scrollbar2.on('viewchange', function(event, data) {
-        _ref.intervalview.setView(null, null, data.position, data.position + data.size, _ref.timeaxis);
-      });
+      // initialize the scrollbar2
       this.scrollbar2.setView(0, 1, 1);
-      this.scrollbar2.bindToWheel(this.panel);
     },
     
     layout: function() {

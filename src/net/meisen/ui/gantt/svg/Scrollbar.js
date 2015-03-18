@@ -3,6 +3,7 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
   var utilities = {
     createArrow: function(size, direction, click, theme) {
       var arrow = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+      arrow.attr('class', 'gantt-scrollbar-arrow');
       
       el = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
       el.attr({ 'width': size, 'height': size, 'x': 0, y: 0, 'rx': 0, 'ry': 0 });
@@ -113,6 +114,7 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
       
       // create a group for the scrollbar
       this.bar = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+      this.bar.attr('class', 'gantt-scrollbar-container');
       
       // create the scrollbar
       var extentAttribute = this.type == 'horizontal' ? 'height' : 'width';
