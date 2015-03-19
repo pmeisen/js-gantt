@@ -41,7 +41,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
             theme: {
               intervalColor: '#f7a35c',
               intervalHeight: 40,
-              intervalBorderSize: 0
+              intervalBorderSize: 1
             }
           }
         }

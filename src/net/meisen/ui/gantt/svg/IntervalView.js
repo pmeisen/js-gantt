@@ -81,7 +81,21 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
           el.attr( { 'data-modX': x, 'data-modY': y, 'x1': (x1 / modX) * x, 'x2': (x2 / modX) * x, 'y1': (y1 / modY) * y, 'y2': (y2 / modY) * y });
         }
       } else {
-        svgLibrary.modifyTransform(el, 'scale', x + ',' + y);
+        
+        // get possible ignores
+        var ignore = el.attr('data-ignorescale');
+        var ignoreX = typeof(ignore) == 'undefined' ? false : ignore.indexOf('x') > -1;
+        var ignoreY = typeof(ignore) == 'undefined' ? false : ignore.indexOf('y') > -1;
+        
+        if (ignoreX && ignoreY) {
+          // nothing to do
+        } else if (ignoreX) {
+          svgLibrary.modifyTransform(el, 'scale', 1 + ',' + y);
+        } else if (ignoreY) {
+          svgLibrary.modifyTransform(el, 'scale', x + ',' + 1);
+        } else {
+          svgLibrary.modifyTransform(el, 'scale', x + ',' + y);
+        }
       }
     }
   };
@@ -100,6 +114,13 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
     
     this.width = 0;
     this.height = 0;
+    
+    this.mouse = {
+      clientX: null,
+      clientY: null,
+      pageX: null,
+      pageY: null
+    }
   };
   
   IntervalView.guidAttr = '_guid';
@@ -157,8 +178,11 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         gridColor: '#D8D8D8',
         gridSize: 1,
         
-        markerColor: '#D8D8D8',
-        markerSize: 1,
+        positionMarkerColor: '#D8D8D8',
+        positionMarkerSize: 1,
+        
+        intervalMarkerOpacity: '0.3',
+        intervalMarkerWidth: null,
         
         borderColor: '#D8D8D8',
         borderSize: 1,
@@ -258,7 +282,20 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       moveArea.attr({ 'x': 0, 'y': 0, 'height': 1, 'width': 1 });
       moveArea.css({ 'fill-opacity': 0.0 });
       moveArea.on('mousemove', function(e) {
-        _ref.showPositionMarker(e.pageX);
+        _ref.mouse.pageX = e.pageX;
+        _ref.mouse.pageY = e.pageY;
+        _ref.mouse.clientX = e.clientX;
+        _ref.mouse.clientY = e.clientY;
+        
+        _ref.showMarker();
+      });
+      moveArea.on('mouseout', function(e) {
+        _ref.mouse.pageX = null;
+        _ref.mouse.pageY = null;
+        _ref.mouse.clientX = null;
+        _ref.mouse.clientY = null;
+        
+        _ref.hideMarker();
       });
       moveArea.appendTo(this.mousemoveMask);
     },
@@ -268,23 +305,88 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       this.map = map;
     },
     
-    showPositionMarker: function(posX, relative) {
-      relative = typeof(relative) == 'undefined' || relative == null ? false : relative;
-
+    hideMarker: function() {
+      if (this.positionMarker != null) {
+        this.positionMarker.css('visibility', 'hidden');
+      }
+      
+      if (this.intervalMarker != null) {
+        this.intervalMarker.css('visibility', 'hidden');
+      }
+    },
+    
+    showMarker: function() {
+      
+      // make sure the mouse is within the view at all, otherwise just return
+      if (this.mouse.clientX == null) {
+        return;
+      }
+      
+      /*
+       * Determine the currently element selected on the canvas, because of 
+       * the order this will be an interval, if one is available.
+       */
+      this.mousemoveMask.hide();
+      var child = $(document.elementFromPoint(this.mouse.clientX, this.mouse.clientY));
+      this.mousemoveMask.show();
+      
+      /*
+       * Check if we really selected an interval and determine the data of
+       * the DOM element.
+       */
+      var idx = child.attr('data-idx');
+      var interval = null;
+      var el = null;
+      if ($.isNumeric(idx)) {
+        interval = this.intervals[idx];
+        el = child;
+      }
+      
+      /*
+       * Create the positionMarker if none is available so far.
+       */
       if (this.positionMarker == null) {
         this.positionMarker = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
         this.positionMarker.attr({ 'data-ignorescale': 'x', 'x1': 0, 'x2': 0, 'y1': 0, 'y2': 1 });
-        this.positionMarker.css({ 'stroke': this.opts.theme.markerColor, 'stroke-width': this.opts.theme.markerSize });
-        this.positionMarker.appendTo(this.mousemoveMask);
+        this.positionMarker.css({ 'stroke': this.opts.theme.positionMarkerColor, 'stroke-width': this.opts.theme.positionMarkerSize });
+        this.positionMarker.appendTo(this.background);
         
         // make sure the scaling is right
-        util.validateScale(this.mousemoveMask);
+        util.validateScale(this.background);
       }
       
-      // this.positionMarker.css('visibility', 'hidden');
-      var relPos = relative ? posX : posX - this.mousemoveMask.offset().left;
+      // position the marker and show it
+      var relPos = this.mouse.pageX - this.mousemoveMask.offset().left;
       this.positionMarker.attr({ 'x1': relPos, 'x2': relPos });
       this.positionMarker.css('visibility', 'visible');
+      
+      /*
+       * Handle the intervalMarker. Create it if necessary and hide it if none
+       * is selected by mouse-over.
+       */
+      if (el == null) {
+        if (this.intervalMarker != null) {
+          this.intervalMarker.css('visibility', 'hidden');
+        }
+      } else {
+        
+       // create the intervalMarker if none is available so far
+        if (this.intervalMarker == null) {
+          this.intervalMarker = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+          this.intervalMarker.attr({ 'data-ignorescale': 'xy' });
+          this.intervalMarker.css({ 'stroke-width': 0, 'fill': this.opts.theme.backgroundColor, 'opacity': this.opts.theme.intervalMarkerOpacity });
+          this.intervalMarker.appendTo(this.background);
+          
+        }
+        
+        var offset = this.opts.theme.intervalMarkerWidth == null ? Math.max(0.2 * this.opts.theme.intervalHeight) : this.opts.theme.intervalMarkerWidth;
+        var color = interval.get(IntervalView.gColor);
+        bbox = el.get(0).getBBox();
+        this.intervalMarker.attr({ 'x': bbox.x - offset, 'y': bbox.y - offset, 'width': bbox.width + 2 * offset, 'height': bbox.height + 2 * offset });
+        this.intervalMarker.css({ 'visibility': 'visible', 'fill': color });
+        util.validateScale(this.background);
+      }
+
     },
     
     setPosition: function(x, y) {
@@ -338,7 +440,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       end = typeof(end) == 'undefined' || end == null ? this.end : end;
       top = typeof(top) == 'undefined' || top == null ? this.top : top;
       bottom = typeof(bottom) == 'undefined' || bottom == null ? this.bottom : bottom;
-      
+            
       // make sure the values are correct
       var changed = this.start != start || this.end != end || this.top != top || this.bottom != bottom;      
       if (!force && !changed) {
@@ -358,10 +460,13 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       }
 
       // determine the relevant data
-      var intervals = this.intervalCollection.overlap(start, end);
-      intervals.sort(function(int1, int2) {
+      this.intervals = this.intervalCollection.overlap(start, end);
+      this.intervals.sort(function(int1, int2) {
         return int1.compare(int2);
       });
+      
+      // hide any selection so far
+      this.hideMarker();
       
       // calculate height, laneHeight, margin and offset
       var height = this.opts.theme.intervalBorderSize * 2 + this.opts.theme.intervalHeight;
@@ -384,11 +489,11 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
 
       // iterate over intervals and create a 'new' or 'reuse' one
       var swimlanesTotal = 0;
-      var intervalsLen = intervals.length;
+      var intervalsLen = this.intervals.length;
       var swimlanesXPoses = [];
       var processId = util.randomId();
       for (var i = 0; i < intervalsLen; i++) {
-        var interval = intervals[i];
+        var interval = this.intervals[i];
 
         // determine the x-position and width
         var x1 = this.resolver.getRelativePixelPos(interval.start);
@@ -411,12 +516,15 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         if (swimlane >= Math.floor(top) && swimlane < Math.ceil(bottom)) {
           var borderedX = x1 + this.opts.theme.intervalBorderSize;
           var borderedWidth = Math.max(0.1, width - 2 * this.opts.theme.intervalBorderSize);
-          this.layoutRepresentor(interval, borderedX, swimlane * swimlaneHeight + offset, borderedWidth, processId);
+          this.layoutRepresentor(i, borderedX, swimlane * swimlaneHeight + offset, borderedWidth, processId);
         }
       }
 
       // remove all the unneeded lines
       this.data.children('[data-processId][data-processId!=' + processId + ']').remove();
+      
+      // select again whatever is covered now
+      this.showMarker();
       
       // fire the view-change event
       this.view.trigger('viewchange', { start: start, end: end, top: top, bottom: bottom, swimlanesView: swimlanesCount, swimlanesTotal: swimlanesTotal });
@@ -451,7 +559,8 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       svgLibrary.modifyTransform(this.grid, 'translate', '0, ' + offset);
     },
     
-    layoutRepresentor: function(interval, x, y, width, processId) {
+    layoutRepresentor: function(idx, x, y, width, processId) {
+      var interval = this.intervals[idx];
       
       // check if we have a guid
       var guid = interval.get(IntervalView.guidAttr);
@@ -481,10 +590,14 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
           'stroke': this.opts.theme.intervalBorderColor, 'stroke-width': this.opts.theme.intervalBorderSize,
           'fill': color
         });
-                
+        
+        representor.on('mousemove', function(e){
+          console.log(e);
+        });
+        
         representor.appendTo(this.data);
       }
-      representor.attr({ 'data-processId': processId });
+      representor.attr({ 'data-processId': processId, 'data-idx': idx });
 
       // position the representor
       representor.attr({ 'x': x, 'y': y, 'width': width });
