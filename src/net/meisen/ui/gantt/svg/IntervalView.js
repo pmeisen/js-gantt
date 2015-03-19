@@ -24,29 +24,106 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       return shadow;
     },
     
-    createToolTipPath: function(width, height, curveRadius) {
+    createToolTipPath: function(canvasEl, el, mouse, text, margin, curveRadius, arrowSize) {
       curveRadius = typeof(curveRadius) == 'undefined' || curveRadius == null ? 3 : curveRadius;
+      arrowSize = typeof(arrowSize) == 'undefined' || arrowSize == null ? 6 : arrowSize;
+      margin = typeof(margin) == 'undefined' || margin == null ? 0 : margin;
+      
+      // get the position of the element
+      var canvasBbox = canvasEl.get(0).getBBox();
+      var bbox = el.get(0).getBBox();
+      
+      // determine the size of the text
+      var textWidth = 100;
+      var textHeight = 50;
+      
+      // calculate the full size of the tool-tip
+      var totalMargin = 2 * margin;
+      var toolTipWidth = textWidth + 2 * curveRadius;
+      var toolTipHeight = textHeight + 2 * curveRadius;
+      var arrowToolTipWidth = toolTipWidth + arrowSize;
+      var arrowToolTipHeight = toolTipHeight + arrowSize;
+      var totalToolTipWidth = arrowToolTipWidth + totalMargin;
+      var totalToolTipHeight = arrowToolTipHeight + totalMargin;
+      var arrowDist = arrowSize + curveRadius + margin;
+
+      // Check if there is room to the right
+      var pos, posTopX, posTopY, posArrow;
+      if (canvasBbox.width - (bbox.x + bbox.width) > totalToolTipWidth) {
+        pos = 'right';
+        posArrow = mouse.pageY - canvasEl.offset().top;
+        posTopX = bbox.x + bbox.width + arrowSize + 3;
+        posTopY = posArrow - 0.5 * toolTipHeight;
+        
+        // make sure it's not out of boundaries
+        
+        posTopY = Math.min(canvasBbox.height - toolTipHeight - margin, Math.max(margin, posTopY));
+        posArrow = Math.max(arrowDist, Math.min(canvasBbox.height - arrowDist - 5, posArrow));
+      } 
+      // Check if there is room to the left
+      else if (bbox.x > totalToolTipWidth) {
+        pos = 'left';
+        posArrow = mouse.pageY - canvasEl.offset().top;
+        posTopX = bbox.x - arrowToolTipWidth - 3;
+        posTopY = mouse.pageY - canvasEl.offset().top - 0.5 * toolTipHeight;
+        
+        // make sure it's not out of boundaries
+        posTopY = Math.min(canvasBbox.height - toolTipHeight - margin, Math.max(margin, posTopY));
+        posArrow = Math.max(arrowDist, Math.min(canvasBbox.height - arrowDist - 5, posArrow));
+      }
+      // Check if there is room to the bottom
+      else if (canvasBbox.height - (bbox.y + bbox.height) > totalToolTipHeight) {
+        pos = 'bottom';
+        posArrow = mouse.pageX - canvasEl.offset().left;
+        posTopX = posArrow - 0.5 * toolTipWidth;
+        posTopY = bbox.y + bbox.height + arrowSize + 3;
+        
+        // make sure it's not out of boundaries
+        posTopX = Math.min(canvasBbox.width - toolTipWidth - margin, Math.max(margin, posTopX));
+        posArrow = Math.max(arrowDist, Math.min(canvasBbox.width - arrowDist - 5, posArrow));
+      }
+      // Check if there is room to the top
+      else if (bbox.y > totalToolTipHeight) {
+        pos = 'top';
+        posArrow = mouse.pageX - canvasEl.offset().left;
+        posTopX = posArrow - 0.5 * toolTipWidth;
+        posTopY = bbox.y - arrowToolTipHeight - 3;
+        
+        // make sure it's not out of boundaries
+        posTopX = Math.min(canvasBbox.width - toolTipWidth - margin, Math.max(margin, posTopX));
+        posArrow = Math.max(arrowDist, Math.min(canvasBbox.width - arrowDist - 5, posArrow));
+      } 
+      // there isn't enough room, so just use the right
+      else {
+        return null;
+      }
       
       // calculate the different positions needed
-      var leftX1 = 0;
-      var leftX2 = curveRadius;
-      var rightX1 = width;
-      var rightX2 = width + curveRadius;
+      var leftX1 = posTopX;
+      var leftX2 = posTopX + curveRadius;
+      var rightX1 = posTopX + textWidth;
+      var rightX2 = posTopX + textWidth + curveRadius;
       
-      var topY1 = 0;
-      var topY2 = curveRadius;
-      var bottomY1 = height + curveRadius;
-      var bottomY2 = height;
+      var topY1 = posTopY;
+      var topY2 = posTopY + curveRadius;
+      var bottomY1 = posTopY + textHeight;
+      var bottomY2 = posTopY + textHeight + curveRadius;
+      
+      var posArrowStart = posArrow - arrowSize;
+      var posArrowEnd = posArrow + arrowSize;
       
       var path = '';
       path += 'M ' + leftX2 + ' ' + topY1;
+      path += pos == 'bottom' ? 'L ' + posArrowStart + ' ' + topY1 + ' ' + posArrow + ' ' + (topY1 - arrowSize) + ' ' + posArrowEnd + ' ' + topY1 : '';
       path += 'L ' + rightX1 + ' ' + topY1;
       path += 'C ' + rightX2 + ' ' + topY1 + ' ' + rightX2 + ' ' + topY1 + ' ' + rightX2 + ' ' + topY2;
-      path += 'L ' + rightX2 + ' ' + bottomY2;
-      path += 'C ' + rightX2 + ' ' + bottomY1 + ' ' + rightX2 + ' ' + bottomY1 + ' ' + rightX1 + ' ' + bottomY1;
-      //path += 'L 65 47 59 53 53 47 3 47';
-      path += 'L ' + leftX2 + ' ' + bottomY1;
-      path += 'C ' + leftX1 + ' ' + bottomY1 + ' ' + leftX1 + ' ' + bottomY1 + ' ' + leftX1 + ' ' + bottomY2;
+      path += pos == 'left' ? 'L ' + rightX2 + ' ' + posArrowStart + ' ' + (rightX2 + arrowSize) + ' ' + posArrow + ' ' + rightX2 + ' ' + posArrowEnd : '';
+      path += 'L ' + rightX2 + ' ' + bottomY1;
+      path += 'C ' + rightX2 + ' ' + bottomY2 + ' ' + rightX2 + ' ' + bottomY2 + ' ' + rightX1 + ' ' + bottomY2;
+      path += pos == 'top' ? 'L ' + posArrowEnd + ' ' + bottomY2 + ' ' + posArrow + ' ' + (bottomY2 + arrowSize) + ' ' + posArrowStart + ' ' + bottomY2 : '';
+      path += 'L ' + leftX2 + ' ' + bottomY2;
+      path += 'C ' + leftX1 + ' ' + bottomY2 + ' ' + leftX1 + ' ' + bottomY2 + ' ' + leftX1 + ' ' + bottomY1;
+      path += pos == 'right' ? 'L ' + leftX1 + ' ' + posArrowEnd + ' ' + (leftX1 - arrowSize) + ' ' + posArrow + ' ' + leftX1 + ' ' + posArrowStart : '';
       path += 'L ' + leftX1 + ' ' + topY2;
       path += 'C ' + leftX1 + ' ' + topY1 + ' ' + leftX1 + ' ' + topY1 + ' ' + leftX2 + ' ' + topY1;
       
@@ -229,6 +306,8 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         borderColor: '#D8D8D8',
         borderSize: 1,
         
+        tooltipMargin: 2,
+        
         intervalMarginInPx: null
       }
     },
@@ -325,12 +404,16 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         moveArea.attr({ 'x': 0, 'y': 0, 'height': 1, 'width': 1 });
         moveArea.css({ 'fill-opacity': 0.0 });
         moveArea.on('mousemove', function(e) {
-          _ref.mouse.pageX = e.pageX;
-          _ref.mouse.pageY = e.pageY;
-          _ref.mouse.clientX = e.clientX;
-          _ref.mouse.clientY = e.clientY;
           
-          _ref.showMarker();
+          var changed = _ref.mouse.pageX != e.pageX || _ref.mouse.pageY != e.pageY || _ref.mouse.clientX != e.clientX || _ref.mouse.clientY != e.clientY;
+          if (changed) {
+            _ref.mouse.pageX = e.pageX;
+            _ref.mouse.pageY = e.pageY;
+            _ref.mouse.clientX = e.clientX;
+            _ref.mouse.clientY = e.clientY;
+            
+            _ref.showMarker();
+          }
         });
         moveArea.on('mouseout', function(e) {
           _ref.mouse.pageX = null;
@@ -472,7 +555,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
             
             // the tool-tip is a group so create one
             this.tooltip = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
-            this.tooltip.attr({ 'class': 'gantt-view-tooltip', 'data-ignorescale': 'xy', 'transform': 'translate(300,100)'});
+            this.tooltip.attr({ 'class': 'gantt-view-tooltip', 'data-ignorescale': 'xy' });
             this.tooltip.appendTo(this.foreground);
                         
             // create the shadow
@@ -495,15 +578,19 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
             shadowOuter = this.tooltip.children('#gantt-view-tooltip-shadow-outer');
           }
 
-          var path = util.createToolTipPath(100, 50);
+          var path = util.createToolTipPath(this.mousemoveMask, el, this.mouse, 'Tool', this.opts.theme.tooltipMargin);
+          if (path == null) {
+            this.tooltip.css('visibility', 'hidden');
+          } else {
           
-          // format the tool-tip for the current interval
-          shadowInner.attr({ 'd': path });
-          shadow.attr({ 'd': path });
-          shadowOuter.attr({ 'd': path });
-          border.attr({ 'd': path });
-          border.css({ 'stroke': interval.get(IntervalView.gColor) });          
-          this.tooltip.css('visibility', 'visible');
+            // format the tool-tip for the current interval
+            shadowInner.attr({ 'd': path });
+            shadow.attr({ 'd': path });
+            shadowOuter.attr({ 'd': path });
+            border.attr({ 'd': path });
+            border.css({ 'stroke': interval.get(IntervalView.gColor) });          
+            this.tooltip.css('visibility', 'visible');
+          }
         }
       }
     },
@@ -617,7 +704,8 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         // determine the x-position and width
         var x1 = this.resolver.getRelativePixelPos(interval.start);
         var x2 = this.resolver.getRelativePixelPos(interval.end);
-        var width = Math.max(0.1, x2 - x1);
+        var width = Math.max(1.0, x2 - x1);
+        x2 += width;
         
         /*
          * Check if we currently have a swimlane.
