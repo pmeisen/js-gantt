@@ -124,9 +124,10 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
       this.scrollarea.css({ 'fill': this.opts.theme.scrollareaColor, 'stroke': this.opts.theme.scrollareaColor, 'stroke-width': 1 });
       this.scrollarea.appendTo(this.bar);
       this.scrollarea.click(function(event) {
-        var pos = this.type == 'horizontal' ? event.offsetX : event.offsetY;
-        
-        var coord = _ref.pixelToCoord(pos - _ref.opts.theme.arrowSize - 1);
+        var offset = _ref.bar.offset();
+        var pos = _ref.type == 'horizontal' ? event.pageX - offset.left : event.pageY - offset.top;       
+        var coord = _ref.pixelToCoord(pos - (_ref.getFixedExtent() + 1));
+
         var direction;
         if (this.type == 'horizontal') {
           direction = coord < _ref.view.position ? 'left' : 'right';
