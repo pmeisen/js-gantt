@@ -69,7 +69,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
       this.canvas.css('fontSize', this.opts.theme.fontSize);
       this.canvas.css('cursor', 'default');
       this.canvas.appendTo(this.panel);
-      
+            
       // observe the resize event
       var _ref = this;
       this.panel.on('sizechanged', function(event, data) {

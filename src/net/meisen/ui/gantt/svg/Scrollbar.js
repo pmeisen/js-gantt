@@ -125,6 +125,7 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
       this.scrollarea.appendTo(this.bar);
       this.scrollarea.click(function(event) {
         var offset = _ref.bar.offset();
+
         var pos = _ref.type == 'horizontal' ? event.pageX - offset.left : event.pageY - offset.top;       
         var coord = _ref.pixelToCoord(pos - (_ref.getFixedExtent() + 1));
 

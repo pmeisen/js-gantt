@@ -47,9 +47,10 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       var totalToolTipHeight = arrowToolTipHeight + totalMargin;
       var arrowDist = arrowSize + curveRadius + margin;
       
-      var posArrowY = mouse.pageY - canvasEl.offset().top;
-      var posArrowX = mouse.pageX - canvasEl.offset().left;
-      
+      var canvasOffset = canvasEl.offset();
+      var posArrowY = mouse.pageY - canvasOffset.top;
+      var posArrowX = mouse.pageX - canvasOffset.left;
+
       var boundTopX = arrowDist;
       var boundTopY = arrowDist;
       var boundBottomX = canvasBbox.width - arrowDist - 5;
@@ -60,6 +61,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       if (canvasBbox.width - (bbox.x + bbox.width) > totalToolTipWidth && posArrowY > boundTopY && posArrowY < boundBottomY) {
         pos = 'right';
         posArrow = posArrowY;
+        
         posTopX = bbox.x + bbox.width + arrowSize + 3;
         posTopY = posArrow - 0.5 * toolTipHeight;
         
@@ -72,7 +74,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         pos = 'left';
         posArrow = posArrowY;
         posTopX = bbox.x - arrowToolTipWidth - 3;
-        posTopY = mouse.pageY - canvasEl.offset().top - 0.5 * toolTipHeight;
+        posTopY = posArrow - 0.5 * toolTipHeight;
         
         // make sure it's not out of boundaries
         posTopY = Math.min(canvasBbox.height - toolTipHeight - margin, Math.max(margin, posTopY));
@@ -181,7 +183,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
           util.doScale($(this), x, y);
           el.attr({ 'data-scaleX': x, 'data-scaleY': y });
         });
-      } else if (tagName == 'line') {
+      } else if (tagName == 'line' || tagName == 'rect') {
         
         // get the older modifications
         var modX = el.attr('data-modX');
@@ -192,22 +194,44 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
           return;
         }
         
-        // get the values
-        var x1 = el.attr('x1');
-        x1 = typeof(x1) == 'undefined' ? 0 : x1;
-        var x2 = el.attr('x2');
-        x2 = typeof(x2) == 'undefined' ? 0 : x2;
-        var y1 = el.attr('y1');
-        y1 = typeof(y1) == 'undefined' ? 0 : y1;
-        var y2 = el.attr('y2');
-        y2 = typeof(y2) == 'undefined' ? 0 : y2;
+        if (tagName == 'line') {
+          
+          // get the values
+          var x1 = el.attr('x1');
+          x1 = typeof(x1) == 'undefined' ? 0 : x1;
+          var x2 = el.attr('x2');
+          x2 = typeof(x2) == 'undefined' ? 0 : x2;
+          var y1 = el.attr('y1');
+          y1 = typeof(y1) == 'undefined' ? 0 : y1;
+          var y2 = el.attr('y2');
+          y2 = typeof(y2) == 'undefined' ? 0 : y2;
+          
+          if (ignoreX) {
+            el.attr( { 'data-modY': y, 'y1': (y1 / modY) * y, 'y2': (y2 / modY) * y });
+          } else if (ignoreY) {
+            el.attr( { 'data-modX': x, 'x1': (x1 / modX) * x, 'x2': (x2 / modX) * x });
+          } else {
+            el.attr( { 'data-modX': x, 'data-modY': y, 'x1': (x1 / modX) * x, 'x2': (x2 / modX) * x, 'y1': (y1 / modY) * y, 'y2': (y2 / modY) * y });
+          }
+        } else if (tagName == 'rect') {
         
-        if (ignoreX) {
-          el.attr( { 'data-modY': y, 'y1': (y1 / modY) * y, 'y2': (y2 / modY) * y });
-        } else if (ignoreY) {
-          el.attr( { 'data-modX': x, 'x1': (x1 / modX) * x, 'x2': (x2 / modX) * x });
-        } else {
-          el.attr( { 'data-modX': x, 'data-modY': y, 'x1': (x1 / modX) * x, 'x2': (x2 / modX) * x, 'y1': (y1 / modY) * y, 'y2': (y2 / modY) * y });
+          // get the values
+          var xPos = el.attr('x');
+          xPos = typeof(xPos) == 'undefined' ? 0 : xPos;
+          var yPos = el.attr('y');
+          yPos = typeof(yPos) == 'undefined' ? 0 : yPos;
+          var width = el.attr('width');
+          width = typeof(width) == 'undefined' ? 0 : width;
+          var height = el.attr('height');
+          height = typeof(height) == 'undefined' ? 0 : height;
+          
+          if (ignoreX) {
+            el.attr( { 'data-modY': y, 'y': (yPos / modY) * y, 'height': (height / modY) * height });
+          } else if (ignoreY) {
+            el.attr( { 'data-modX': x, 'x': (xPos / modX) * x, 'width': (width / modX) * width });
+          } else {
+            el.attr( { 'data-modX': x, 'data-modY': y, 'x': (xPos / modX) * x, 'width': (width / modX) * x, 'y': (yPos / modY) * y, 'height': (height / modY) * y });
+          }
         }
       } else {
                 
@@ -411,7 +435,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         moveArea.attr({ 'x': 0, 'y': 0, 'height': 1, 'width': 1 });
         moveArea.css({ 'fill-opacity': 0.0 });
         moveArea.on('mousemove', function(e) {
-          
+
           var changed = _ref.mouse.pageX != e.pageX || _ref.mouse.pageY != e.pageY || _ref.mouse.clientX != e.clientX || _ref.mouse.clientY != e.clientY;
           if (changed) {
             _ref.mouse.pageX = e.pageX;
@@ -804,11 +828,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
           'stroke': this.opts.theme.intervalBorderColor, 'stroke-width': this.opts.theme.intervalBorderSize,
           'fill': color
         });
-        
-        representor.on('mousemove', function(e){
-          console.log(e);
-        });
-        
+                
         representor.appendTo(this.data);
       }
       representor.attr({ 'data-processId': processId, 'data-idx': idx });
