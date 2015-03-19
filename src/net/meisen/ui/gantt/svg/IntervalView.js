@@ -136,6 +136,10 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       showGrid: true,
       showBorder: true,
       showBackground: true,
+      showPositionMarker: true,
+      showIntervalMarker: true,
+      showPositionToolTip: true,
+      showIntervalToolTip: true,
       
       coloring: {
         groupMapping: null,
@@ -272,32 +276,34 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       }
       
       // create the container for the mouse-move stuff
-      this.mousemoveMask = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
-      this.mousemoveMask.attr('class', 'gantt-view-mousemovemask');
-      this.mousemoveMask.appendTo(canvas);
-      
-      // create invisible mask for mouse-over
-      var _ref = this;
-      var moveArea = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
-      moveArea.attr({ 'x': 0, 'y': 0, 'height': 1, 'width': 1 });
-      moveArea.css({ 'fill-opacity': 0.0 });
-      moveArea.on('mousemove', function(e) {
-        _ref.mouse.pageX = e.pageX;
-        _ref.mouse.pageY = e.pageY;
-        _ref.mouse.clientX = e.clientX;
-        _ref.mouse.clientY = e.clientY;
+      if (this.opts.showPositionMarker || this.opts.showIntervalMarker || this.opts.showPositionToolTip || this.opts.showIntervalToolTip) {
+        this.mousemoveMask = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+        this.mousemoveMask.attr('class', 'gantt-view-mousemovemask');
+        this.mousemoveMask.appendTo(canvas);
         
-        _ref.showMarker();
-      });
-      moveArea.on('mouseout', function(e) {
-        _ref.mouse.pageX = null;
-        _ref.mouse.pageY = null;
-        _ref.mouse.clientX = null;
-        _ref.mouse.clientY = null;
-        
-        _ref.hideMarker();
-      });
-      moveArea.appendTo(this.mousemoveMask);
+        // create invisible mask for mouse-over
+        var _ref = this;
+        var moveArea = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+        moveArea.attr({ 'x': 0, 'y': 0, 'height': 1, 'width': 1 });
+        moveArea.css({ 'fill-opacity': 0.0 });
+        moveArea.on('mousemove', function(e) {
+          _ref.mouse.pageX = e.pageX;
+          _ref.mouse.pageY = e.pageY;
+          _ref.mouse.clientX = e.clientX;
+          _ref.mouse.clientY = e.clientY;
+          
+          _ref.showMarker();
+        });
+        moveArea.on('mouseout', function(e) {
+          _ref.mouse.pageX = null;
+          _ref.mouse.pageY = null;
+          _ref.mouse.clientX = null;
+          _ref.mouse.clientY = null;
+          
+          _ref.hideMarker();
+        });
+        moveArea.appendTo(this.mousemoveMask);
+      }
     },
     
     setData: function(intervalCollection, map) {
@@ -317,76 +323,93 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
     
     showMarker: function() {
       
+      /*
+       * Check some pre-conditions, i.e.:
+       *  - check if anything has to be shown, i.e. if one of the 
+       *    show... is configured
+       *  - there is no mouse-mask available
+       *  - make sure the mouse is within the view at all
+       */
       // make sure the mouse is within the view at all, otherwise just return
-      if (this.mouse.clientX == null) {
+      if (!this.opts.showPositionMarker && !this.opts.showIntervalMarker && !this.opts.showPositionToolTip && !this.opts.showIntervalToolTip) {
+        return;
+      } else if (typeof(this.mousemoveMask) =='undefined' || this.mousemoveMask == null) {
+        return;
+      } else if (this.mouse.clientX == null) {
         return;
       }
-      
-      /*
-       * Determine the currently element selected on the canvas, because of 
-       * the order this will be an interval, if one is available.
-       */
-      this.mousemoveMask.hide();
-      var child = $(document.elementFromPoint(this.mouse.clientX, this.mouse.clientY));
-      this.mousemoveMask.show();
-      
-      /*
-       * Check if we really selected an interval and determine the data of
-       * the DOM element.
-       */
-      var idx = child.attr('data-idx');
-      var interval = null;
-      var el = null;
-      if ($.isNumeric(idx)) {
-        interval = this.intervals[idx];
-        el = child;
-      }
-      
+            
       /*
        * Create the positionMarker if none is available so far.
        */
-      if (this.positionMarker == null) {
-        this.positionMarker = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
-        this.positionMarker.attr({ 'data-ignorescale': 'x', 'x1': 0, 'x2': 0, 'y1': 0, 'y2': 1 });
-        this.positionMarker.css({ 'stroke': this.opts.theme.positionMarkerColor, 'stroke-width': this.opts.theme.positionMarkerSize });
-        this.positionMarker.appendTo(this.background);
-        
-        // make sure the scaling is right
-        util.validateScale(this.background);
-      }
-      
-      // position the marker and show it
-      var relPos = this.mouse.pageX - this.mousemoveMask.offset().left;
-      this.positionMarker.attr({ 'x1': relPos, 'x2': relPos });
-      this.positionMarker.css('visibility', 'visible');
-      
-      /*
-       * Handle the intervalMarker. Create it if necessary and hide it if none
-       * is selected by mouse-over.
-       */
-      if (el == null) {
-        if (this.intervalMarker != null) {
-          this.intervalMarker.css('visibility', 'hidden');
-        }
-      } else {
-        
-       // create the intervalMarker if none is available so far
-        if (this.intervalMarker == null) {
-          this.intervalMarker = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
-          this.intervalMarker.attr({ 'data-ignorescale': 'xy' });
-          this.intervalMarker.css({ 'stroke-width': 0, 'fill': this.opts.theme.backgroundColor, 'opacity': this.opts.theme.intervalMarkerOpacity });
-          this.intervalMarker.appendTo(this.background);
+      if (this.opts.showPositionMarker) {
+        if (this.positionMarker == null) {
+          this.positionMarker = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+          this.positionMarker.attr({ 'data-ignorescale': 'x', 'x1': 0, 'x2': 0, 'y1': 0, 'y2': 1 });
+          this.positionMarker.css({ 'stroke': this.opts.theme.positionMarkerColor, 'stroke-width': this.opts.theme.positionMarkerSize });
+          this.positionMarker.appendTo(this.background);
           
+          // make sure the scaling is right
+          util.validateScale(this.background);
         }
         
-        var offset = this.opts.theme.intervalMarkerWidth == null ? Math.max(0.2 * this.opts.theme.intervalHeight) : this.opts.theme.intervalMarkerWidth;
-        var color = interval.get(IntervalView.gColor);
-        bbox = el.get(0).getBBox();
-        this.intervalMarker.attr({ 'x': bbox.x - offset, 'y': bbox.y - offset, 'width': bbox.width + 2 * offset, 'height': bbox.height + 2 * offset });
-        this.intervalMarker.css({ 'visibility': 'visible', 'fill': color });
-        util.validateScale(this.background);
+        // position the marker and show it
+        var relPos = this.mouse.pageX - this.mousemoveMask.offset().left;
+        this.positionMarker.attr({ 'x1': relPos, 'x2': relPos });
+        this.positionMarker.css('visibility', 'visible');
       }
-
+      
+      if (this.opts.showIntervalMarker) {
+        
+        /*
+         * Determine the currently element selected on the canvas, because of 
+         * the order this will be an interval, if one is available.
+         */
+        this.mousemoveMask.hide();
+        var child = $(document.elementFromPoint(this.mouse.clientX, this.mouse.clientY));
+        this.mousemoveMask.show();
+        
+        /*
+         * Check if we really selected an interval and determine the data of
+         * the DOM element.
+         */
+        var idx = child.attr('data-idx');
+        var interval = null;
+        var el = null;
+        if ($.isNumeric(idx)) {
+          interval = this.intervals[idx];
+          el = child;
+        }
+      }
+      
+      if (this.opts.showIntervalMarker) {
+        
+        /*
+         * Handle the intervalMarker. Create it if necessary and hide it if none
+         * is selected by mouse-over.
+         */
+        if (el == null) {
+          if (this.intervalMarker != null) {
+            this.intervalMarker.css('visibility', 'hidden');
+          }
+        } else {
+          
+         // create the intervalMarker if none is available so far
+          if (this.intervalMarker == null) {
+            this.intervalMarker = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+            this.intervalMarker.attr({ 'data-ignorescale': 'xy' });
+            this.intervalMarker.css({ 'stroke-width': 0, 'fill': this.opts.theme.backgroundColor, 'opacity': this.opts.theme.intervalMarkerOpacity });
+            this.intervalMarker.appendTo(this.background);
+          }
+          
+          var offset = this.opts.theme.intervalMarkerWidth == null ? Math.max(0.2 * this.opts.theme.intervalHeight) : this.opts.theme.intervalMarkerWidth;
+          var color = interval.get(IntervalView.gColor);
+          bbox = el.get(0).getBBox();
+          this.intervalMarker.attr({ 'x': bbox.x - offset, 'y': bbox.y - offset, 'width': bbox.width + 2 * offset, 'height': bbox.height + 2 * offset });
+          this.intervalMarker.css({ 'visibility': 'visible', 'fill': color });
+          util.validateScale(this.background);
+        }
+      }
     },
     
     setPosition: function(x, y) {
