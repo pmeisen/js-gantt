@@ -46,52 +46,59 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       var totalToolTipWidth = arrowToolTipWidth + totalMargin;
       var totalToolTipHeight = arrowToolTipHeight + totalMargin;
       var arrowDist = arrowSize + curveRadius + margin;
-
+      
+      var posArrowY = mouse.pageY - canvasEl.offset().top;
+      var posArrowX = mouse.pageX - canvasEl.offset().left;
+      
+      var boundTopX = arrowDist;
+      var boundTopY = arrowDist;
+      var boundBottomX = canvasBbox.width - arrowDist - 5;
+      var boundBottomY = canvasBbox.height - arrowDist - 5;
+      
       // Check if there is room to the right
       var pos, posTopX, posTopY, posArrow;
-      if (canvasBbox.width - (bbox.x + bbox.width) > totalToolTipWidth) {
+      if (canvasBbox.width - (bbox.x + bbox.width) > totalToolTipWidth && posArrowY > boundTopY && posArrowY < boundBottomY) {
         pos = 'right';
-        posArrow = mouse.pageY - canvasEl.offset().top;
+        posArrow = posArrowY;
         posTopX = bbox.x + bbox.width + arrowSize + 3;
         posTopY = posArrow - 0.5 * toolTipHeight;
         
         // make sure it's not out of boundaries
-        
         posTopY = Math.min(canvasBbox.height - toolTipHeight - margin, Math.max(margin, posTopY));
-        posArrow = Math.max(arrowDist, Math.min(canvasBbox.height - arrowDist - 5, posArrow));
+        posArrow = Math.max(boundTopY, Math.min(boundBottomY, posArrow));
       } 
       // Check if there is room to the left
-      else if (bbox.x > totalToolTipWidth) {
+      else if (bbox.x > totalToolTipWidth && posArrowY > boundTopY && posArrowY < boundBottomY) {
         pos = 'left';
-        posArrow = mouse.pageY - canvasEl.offset().top;
+        posArrow = posArrowY;
         posTopX = bbox.x - arrowToolTipWidth - 3;
         posTopY = mouse.pageY - canvasEl.offset().top - 0.5 * toolTipHeight;
         
         // make sure it's not out of boundaries
         posTopY = Math.min(canvasBbox.height - toolTipHeight - margin, Math.max(margin, posTopY));
-        posArrow = Math.max(arrowDist, Math.min(canvasBbox.height - arrowDist - 5, posArrow));
+        posArrow = Math.max(boundTopY, Math.min(boundBottomY, posArrow));
       }
       // Check if there is room to the bottom
-      else if (canvasBbox.height - (bbox.y + bbox.height) > totalToolTipHeight) {
+      else if (canvasBbox.height - (bbox.y + bbox.height) > totalToolTipHeight && posArrowX > boundTopX && posArrowX < boundBottomX) {
         pos = 'bottom';
-        posArrow = mouse.pageX - canvasEl.offset().left;
+        posArrow = posArrowX;
         posTopX = posArrow - 0.5 * toolTipWidth;
         posTopY = bbox.y + bbox.height + arrowSize + 3;
         
         // make sure it's not out of boundaries
         posTopX = Math.min(canvasBbox.width - toolTipWidth - margin, Math.max(margin, posTopX));
-        posArrow = Math.max(arrowDist, Math.min(canvasBbox.width - arrowDist - 5, posArrow));
+        posArrow = Math.max(boundTopX, Math.min(boundBottomX, posArrow));
       }
       // Check if there is room to the top
-      else if (bbox.y > totalToolTipHeight) {
+      else if (bbox.y > totalToolTipHeight && posArrowX > boundTopX && posArrowX < boundBottomX) {
         pos = 'top';
-        posArrow = mouse.pageX - canvasEl.offset().left;
+        posArrow = posArrowX;
         posTopX = posArrow - 0.5 * toolTipWidth;
         posTopY = bbox.y - arrowToolTipHeight - 3;
         
         // make sure it's not out of boundaries
         posTopX = Math.min(canvasBbox.width - toolTipWidth - margin, Math.max(margin, posTopX));
-        posArrow = Math.max(arrowDist, Math.min(canvasBbox.width - arrowDist - 5, posArrow));
+        posArrow = Math.max(boundTopX, Math.min(boundBottomX, posArrow));
       } 
       // there isn't enough room, so just use the right
       else {

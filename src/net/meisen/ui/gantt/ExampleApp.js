@@ -78,8 +78,8 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
       illustrator: {
         config: {
           axis: {
-            viewSize: 2880,
-            tickInterval: 720
+            viewSize: 1440,
+            tickInterval: 360
           },
           view: {
             showBorder: false,
