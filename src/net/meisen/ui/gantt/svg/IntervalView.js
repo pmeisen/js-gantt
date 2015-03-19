@@ -16,6 +16,43 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       return '_' + Math.random().toString(36).substr(2, 9);
     },
     
+    createShadow: function(id, opacity, width) {
+      var shadow = $(document.createElementNS('http://www.w3.org/2000/svg', 'path'));
+      shadow.attr({ 'id': id, 'transform': 'translate(1,1)' });
+      shadow.css({ 'stroke-width': width, 'opacity': opacity, 'fill': 'none', 'stroke': '#000000' });
+      
+      return shadow;
+    },
+    
+    createToolTipPath: function(width, height, curveRadius) {
+      curveRadius = typeof(curveRadius) == 'undefined' || curveRadius == null ? 3 : curveRadius;
+      
+      // calculate the different positions needed
+      var leftX1 = 0;
+      var leftX2 = curveRadius;
+      var rightX1 = width;
+      var rightX2 = width + curveRadius;
+      
+      var topY1 = 0;
+      var topY2 = curveRadius;
+      var bottomY1 = height + curveRadius;
+      var bottomY2 = height;
+      
+      var path = '';
+      path += 'M ' + leftX2 + ' ' + topY1;
+      path += 'L ' + rightX1 + ' ' + topY1;
+      path += 'C ' + rightX2 + ' ' + topY1 + ' ' + rightX2 + ' ' + topY1 + ' ' + rightX2 + ' ' + topY2;
+      path += 'L ' + rightX2 + ' ' + bottomY2;
+      path += 'C ' + rightX2 + ' ' + bottomY1 + ' ' + rightX2 + ' ' + bottomY1 + ' ' + rightX1 + ' ' + bottomY1;
+      //path += 'L 65 47 59 53 53 47 3 47';
+      path += 'L ' + leftX2 + ' ' + bottomY1;
+      path += 'C ' + leftX1 + ' ' + bottomY1 + ' ' + leftX1 + ' ' + bottomY1 + ' ' + leftX1 + ' ' + bottomY2;
+      path += 'L ' + leftX1 + ' ' + topY2;
+      path += 'C ' + leftX1 + ' ' + topY1 + ' ' + leftX1 + ' ' + topY1 + ' ' + leftX2 + ' ' + topY1;
+      
+      return path;
+    },
+    
     validateScale: function(el) {
       var scaleX = el.attr('data-scaleX');
       var scaleY = el.attr('data-scaleY');
@@ -42,9 +79,24 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
     doScale: function(el, x, y) {
       var tagName = el.prop('tagName');
       
-      if (tagName == 'g') {
-        el.children().each(function() { util.doScale($(this), x, y); });
-        el.attr({ 'data-scaleX': x, 'data-scaleY': y });
+      // get possible ignores
+      var ignore = el.attr('data-ignorescale');
+      var ignoreX = typeof(ignore) == 'undefined' ? false : ignore.indexOf('x') > -1;
+      var ignoreY = typeof(ignore) == 'undefined' ? false : ignore.indexOf('y') > -1;
+      
+      if (ignoreX && ignoreY) {
+        return;
+      } else if (tagName == 'g') {
+        el.children().each(function() {
+          if (ignoreX) {
+            x = 1;
+          } else if (ignoreY) {
+            y = 1;
+          }
+          
+          util.doScale($(this), x, y);
+          el.attr({ 'data-scaleX': x, 'data-scaleY': y });
+        });
       } else if (tagName == 'line') {
         
         // get the older modifications
@@ -66,14 +118,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         var y2 = el.attr('y2');
         y2 = typeof(y2) == 'undefined' ? 0 : y2;
         
-        // get possible ignores
-        var ignore = el.attr('data-ignorescale');
-        var ignoreX = typeof(ignore) == 'undefined' ? false : ignore.indexOf('x') > -1;
-        var ignoreY = typeof(ignore) == 'undefined' ? false : ignore.indexOf('y') > -1;
-                
-        if (ignoreX && ignoreY) {
-          // nothing to do
-        } else if (ignoreX) {
+        if (ignoreX) {
           el.attr( { 'data-modY': y, 'y1': (y1 / modY) * y, 'y2': (y2 / modY) * y });
         } else if (ignoreY) {
           el.attr( { 'data-modX': x, 'x1': (x1 / modX) * x, 'x2': (x2 / modX) * x });
@@ -81,15 +126,8 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
           el.attr( { 'data-modX': x, 'data-modY': y, 'x1': (x1 / modX) * x, 'x2': (x2 / modX) * x, 'y1': (y1 / modY) * y, 'y2': (y2 / modY) * y });
         }
       } else {
-        
-        // get possible ignores
-        var ignore = el.attr('data-ignorescale');
-        var ignoreX = typeof(ignore) == 'undefined' ? false : ignore.indexOf('x') > -1;
-        var ignoreY = typeof(ignore) == 'undefined' ? false : ignore.indexOf('y') > -1;
-        
-        if (ignoreX && ignoreY) {
-          // nothing to do
-        } else if (ignoreX) {
+                
+        if (ignoreX) {
           svgLibrary.modifyTransform(el, 'scale', 1 + ',' + y);
         } else if (ignoreY) {
           svgLibrary.modifyTransform(el, 'scale', x + ',' + 1);
@@ -315,9 +353,11 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       if (this.positionMarker != null) {
         this.positionMarker.css('visibility', 'hidden');
       }
-      
       if (this.intervalMarker != null) {
         this.intervalMarker.css('visibility', 'hidden');
+      }
+      if (this.tooltip != null) {
+        this.tooltip.css('visibility', 'hidden');
       }
     },
     
@@ -338,10 +378,40 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       } else if (this.mouse.clientX == null) {
         return;
       }
-            
+      
       /*
-       * Create the positionMarker if none is available so far.
+       * Check if an interval is selected by the current mouse-position.
        */
+      var interval = null;
+      var el = null;
+      if (this.opts.showIntervalMarker || this.opts.showIntervalToolTip) {
+        
+        /*
+         * Determine the currently element selected on the canvas, because of 
+         * the order this will be an interval, if one is available.
+         */
+        this.mousemoveMask.hide();
+        var child = $(document.elementFromPoint(this.mouse.clientX, this.mouse.clientY));
+        this.mousemoveMask.show();
+        
+        /*
+         * Check if we really selected an interval and determine the data of
+         * the DOM element.
+         */
+        var idx = child.attr('data-idx');
+        if ($.isNumeric(idx)) {
+          interval = this.intervals[idx];
+          el = child;
+        }
+      }
+
+      this.showPositionMarker();
+      this.showIntervalMarker(el, interval);
+      this.showToolTip(el, interval);
+    },
+    
+    showPositionMarker: function() {
+      
       if (this.opts.showPositionMarker) {
         if (this.positionMarker == null) {
           this.positionMarker = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
@@ -358,43 +428,18 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         this.positionMarker.attr({ 'x1': relPos, 'x2': relPos });
         this.positionMarker.css('visibility', 'visible');
       }
+    },
+    
+    showIntervalMarker: function(el, interval) {
       
       if (this.opts.showIntervalMarker) {
-        
-        /*
-         * Determine the currently element selected on the canvas, because of 
-         * the order this will be an interval, if one is available.
-         */
-        this.mousemoveMask.hide();
-        var child = $(document.elementFromPoint(this.mouse.clientX, this.mouse.clientY));
-        this.mousemoveMask.show();
-        
-        /*
-         * Check if we really selected an interval and determine the data of
-         * the DOM element.
-         */
-        var idx = child.attr('data-idx');
-        var interval = null;
-        var el = null;
-        if ($.isNumeric(idx)) {
-          interval = this.intervals[idx];
-          el = child;
-        }
-      }
-      
-      if (this.opts.showIntervalMarker) {
-        
-        /*
-         * Handle the intervalMarker. Create it if necessary and hide it if none
-         * is selected by mouse-over.
-         */
         if (el == null) {
           if (this.intervalMarker != null) {
             this.intervalMarker.css('visibility', 'hidden');
           }
         } else {
           
-         // create the intervalMarker if none is available so far
+          // create the intervalMarker if none is available so far
           if (this.intervalMarker == null) {
             this.intervalMarker = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
             this.intervalMarker.attr({ 'data-ignorescale': 'xy' });
@@ -402,12 +447,63 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
             this.intervalMarker.appendTo(this.background);
           }
           
-          var offset = this.opts.theme.intervalMarkerWidth == null ? Math.max(0.2 * this.opts.theme.intervalHeight) : this.opts.theme.intervalMarkerWidth;
+          var offset = this.opts.theme.intervalMarkerWidth == null ? Math.max(0.15 * this.opts.theme.intervalHeight) : this.opts.theme.intervalMarkerWidth;
           var color = interval.get(IntervalView.gColor);
-          bbox = el.get(0).getBBox();
+          bbox = el.get(0).getBBox();          
           this.intervalMarker.attr({ 'x': bbox.x - offset, 'y': bbox.y - offset, 'width': bbox.width + 2 * offset, 'height': bbox.height + 2 * offset });
           this.intervalMarker.css({ 'visibility': 'visible', 'fill': color });
-          util.validateScale(this.background);
+        }
+      }
+    },
+    
+    showToolTip: function(el, interval) {
+      
+      if (this.opts.showIntervalToolTip) {
+        
+        if (el == null) {
+          if (this.tooltip != null) {
+            this.tooltip.css('visibility', 'hidden');
+          }
+        } else {
+        
+          // create the tooltip if none is available so far
+          var border, shadowInner, shadow, shadowOuter;
+          if (this.tooltip == null) {
+            
+            // the tool-tip is a group so create one
+            this.tooltip = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+            this.tooltip.attr({ 'class': 'gantt-view-tooltip', 'data-ignorescale': 'xy', 'transform': 'translate(300,100)'});
+            this.tooltip.appendTo(this.foreground);
+                        
+            // create the shadow
+            shadowOuter = util.createShadow('gantt-view-tooltip-shadow-outer', 0.05, 5);
+            shadowOuter.appendTo(this.tooltip);
+            shadow = util.createShadow('gantt-view-tooltip-shadow', 0.1, 3);
+            shadow.appendTo(this.tooltip);
+            shadowInner = util.createShadow('gantt-view-tooltip-shadow-inner', 0.2, 1);
+            shadowInner.appendTo(this.tooltip);
+            
+            // create the border for the tool-tip
+            border = $(document.createElementNS('http://www.w3.org/2000/svg', 'path'));
+            border.attr({ 'id': 'gantt-view-tooltip-border' });
+            border.css({ 'stroke-width': 1, 'opacity': 0.9, 'fill': '#EEEEEE' });
+            border.appendTo(this.tooltip);
+          } else {
+            border = this.tooltip.children('#gantt-view-tooltip-border');
+            shadowInner = this.tooltip.children('#gantt-view-tooltip-shadow-inner');
+            shadow = this.tooltip.children('#gantt-view-tooltip-shadow');
+            shadowOuter = this.tooltip.children('#gantt-view-tooltip-shadow-outer');
+          }
+
+          var path = util.createToolTipPath(100, 50);
+          
+          // format the tool-tip for the current interval
+          shadowInner.attr({ 'd': path });
+          shadow.attr({ 'd': path });
+          shadowOuter.attr({ 'd': path });
+          border.attr({ 'd': path });
+          border.css({ 'stroke': interval.get(IntervalView.gColor) });          
+          this.tooltip.css('visibility', 'visible');
         }
       }
     },
@@ -560,7 +656,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         if (this.grid == null) {
           this.grid = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
           this.grid.attr('class', 'gantt-view-grid');
-          this.grid.appendTo(this.view);
+          this.background.children(':first').after(this.grid);
         }
         
         // remove the grid, because it was changed

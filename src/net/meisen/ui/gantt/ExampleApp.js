@@ -38,6 +38,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
           },
           view: {
             showGrid: false,
+            showPositionMarker: false,
             theme: {
               intervalColor: '#f7a35c',
               intervalHeight: 40,
