@@ -28,6 +28,37 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
       return 1.2 * fontSize;
     },
     
+    replace: function(text, data) {
+      var reg = new RegExp('\\{(\\d+)(?:\\|(date|number)(?:\\|([^\\}]+))?)?\\}', 'i');
+      
+      var result;
+      var tmpText = null;
+      while ((result = reg.exec(text)) !== null && tmpText != text) {
+        tmpText = text;
+        
+        var match = result[0];
+        
+        var idx = result[1];
+        var type = result[2];
+        var format = result[3];
+
+        var replacement;
+        if (type == 'date') {
+          replacement = dateLibrary.formatUTC(data[idx - 1], format);
+        } else if (type == 'number') {
+          replacement = data[idx - 1];
+        } else if (type == 'string' || typeof(type) == 'undefined' || type == null) {
+          replacement = data[idx - 1];
+        } else {
+          replacement = '\u00a0';
+        }
+        
+        text = text.replace(match, replacement);
+      }
+      
+      return text;
+    },
+    
     createToolTipPath: function(canvasEl, el, mouse, text, theme) {
       curveRadius = typeof(theme) == 'undefined' ? 3 : theme.tooltipRadius;
       arrowSize = typeof(theme) == 'undefined' ? 6 : theme.tooltipArrow;
@@ -65,7 +96,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
       // determine the size of the text
       var textWidth = Math.max(1.5 * arrowSize, textBbox.width);
       var textHeight = Math.max(1.5 * arrowSize, text.children('tspan').size() * util.getLineHeight(theme.tooltipSize));
-      var offsetYText = 0.4 * textHeight;
+      var offsetYText = -0.2 * util.getLineHeight(theme.tooltipSize);
 
       // calculate the full size of the tool-tip
       var totalMargin = 2 * margin;
@@ -363,38 +394,38 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
           // get the values defined for the tool-tip
           var raw = interval.get(IntervalView.gRawAttr);
           var entries = map.get('tooltip', raw);
-          
-          // make sure a tool-tip is defined, return null if none should be shown
-          var entriesSize = entries.length;
-          if ($.type(entries) != 'array' != entriesSize == 0) {
-            return null;
-          }
-          
+                    
           // make sure we have a valid format, otherwise null is returned
           var formattedText = null;
           if (textFormat == null) {
+            
+            // make sure a tool-tip is defined, return null if none should be shown
+            var entriesSize = entries.length;
+            if ($.type(entries) != 'array' || entriesSize == 0) {
+              return null;
+            }
+            
             formattedText = $(document.createElementNS('http://www.w3.org/2000/svg', 'text'));
             for (var i = 0; i < entriesSize; i++) {
               var tspan = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
               tspan.text(entries[i]);
               
               tspan.attr('x', '0');
-              tspan.attr('dy', i * util.getLineHeight(theme.tooltipSize));
+              tspan.attr('dy', util.getLineHeight(theme.tooltipSize));
               
               formattedText.append(tspan);
             }
           } else if ($.type(textFormat) == 'string') {
             formattedText = $(document.createElementNS('http://www.w3.org/2000/svg', 'text'));
             
-            var spanReplace = function(text) {
-              var textParser = $('<div>' + text + '</div>');
-              
+            var spanReplace = function(text, textParser) {
+              var textParser = textParser == null || typeof(textParser) == 'undefined' ? $('<div>' + text + '</div>') : textParser;
               var tspan = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
               
               var content = textParser.contents();
               content.each(function() {                
                 var inner = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
-                inner.text($(this).text());
+                inner.text(util.replace($(this).text(), entries));
                 
                 // clone the attributes
                 if (this.nodeType == 1) {
@@ -418,22 +449,18 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
               // check if we have spans defined
               var tspan = null;
               if (textParser.find('span').length > 0) {
-                tspan = spanReplace(text);
+                tspan = spanReplace(text, textParser);
               } else {
                 tspan = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
-                tspan.text(text);
+                tspan.text(util.replace(text, entries));
               }
 
               // position it
               tspan.attr('x', '0');
-              tspan.attr('dy', i * util.getLineHeight(theme.tooltipSize));
+              tspan.attr('dy', util.getLineHeight(theme.tooltipSize));
               
               formattedText.append(tspan);
             }
-          } else if (textFormat instanceof jQuery) {
-            
-            
-            formattedText = textFormat.clone();
           } else if ($.isFunction(textFormat)){
             formattedText = this.tooltip(interval, map, textFormat(interval, map), theme);
           } else {
@@ -472,6 +499,8 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
         tooltipArrow: 6,
         tooltipRadius: 3,
         tooltipSize: 11,
+        
+        tooltipTextColor: '#000000',
         
         intervalMarginInPx: null
       }
@@ -749,7 +778,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
           } else {
             
             // set some properties
-            text.css({ 'fontSize': this.opts.theme.tooltipSize + 'px', 'fill': '#FF00FF', 'color': '#FF00FF', 'cursor': 'default' });
+            text.css({ 'fontSize': this.opts.theme.tooltipSize + 'px', 'fill': this.opts.theme.tooltipTextColor, 'color': this.opts.theme.tooltipTextColor, 'cursor': 'default' });
               
             // get the path
             var path = util.createToolTipPath(this.mousemoveMask, el, this.mouse, text, this.opts.theme);

@@ -70,7 +70,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
         mapper: {
           startname: 'start',
           endname: 'end',
-          tooltip: ['number', 'start']
+          tooltip: ['number', 'start', 'end']
         },
         timeaxis: {
           end: datelib.modifyUTC(datelib.createUTC(null, null, null, 23, 59, 0), 1, 'd'),
@@ -85,8 +85,8 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
           view: {
             showGrid: false,
             showPositionMarker: false,
-            tooltip: function() {
-              return 'Some marks: ?ßgGÁ\nSome marks: ?ßgGÁ';
+            tooltip: function(interval, map) {
+              return 'Some marks: ?ßgGÁ\nSome marks: ?ßgGÁ\n{1|number|#.00}\n{2|date|HH:mm:ss} - {3|date|HH:mm:ss}\n' + interval.get('_raw')[2];
             },
             theme: {
               intervalColor: '#f7a35c',
@@ -129,7 +129,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
           view: {
             showGrid: false,
             showPositionMarker: false,
-            tooltip: '<span style="color: \'#FF00FF\'">{1}</span>\n<span style="fill: #FF0000">Start:</span> {2|d|HH:mm:ss}, <span style="fill: #FF0000">End:</span> {3|d|HH:mm:ss}',
+            tooltip: '<span style="color: \'#FF00FF\'">{1}</span>\n<span style="fill: #FF0000">Start:</span> {2|date|HH:mm:ss}, <span style="fill: #FF0000">End:</span> {3|date|HH:mm:ss}',
             theme: {
               intervalColor: '#f7a35c',
               intervalHeight: 40,
@@ -175,7 +175,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
           },
           view: {
             showBorder: false,
-            tooltip: '{1} called {2}\nat {3|d|dd.MM.yyyy}',
+            tooltip: '{1} called {2}\nat {3|date|dd.MM.yyyy}',
             coloring: {
               groupMapping: {
                 '["Female","Female"]': '#7cb5ec',
