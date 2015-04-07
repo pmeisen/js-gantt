@@ -14,7 +14,7 @@ requirejs.config({
 
 // now start the entry-point
 require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/GanttChart'], function($, datelib) {
-  var chartFixedData = $("#chartFixedData").ganttChart({
+  var chartFixedData1 = $("#chartFixedData1").ganttChart({
       data: {
         names: ['start', 'end', 'value', 'number'],
         records: [
@@ -26,6 +26,11 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
           [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 12, 0, 0), '12 Hours', 720 ],
           [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 23, 59, 0), 'All Day', 1439 ]
         ],
+        mapper: {
+          startname: 'start',
+          endname: 'end',
+          tooltip: ['number', 'start']
+        },
         timeaxis: {
           end: datelib.modifyUTC(datelib.createUTC(null, null, null, 23, 59, 0), 1, 'd'),
           granularity: 'mi'
@@ -48,7 +53,94 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
         }
       }
     });
-  chartFixedData.resize(1200, 300);
+  chartFixedData1.resize(1200, 300);
+  
+  var chartFixedData2 = $("#chartFixedData2").ganttChart({
+      data: {
+        names: ['start', 'end', 'value', 'number'],
+        records: [
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 2, 0, 0), '2 Hours', 120 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 4, 0, 0), '4 Hours', 240 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 6, 0, 0), '6 Hours', 360 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 8, 0, 0), '8 Hours', 480 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 10, 0, 0), '10 Hours', 600 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 12, 0, 0), '12 Hours', 720 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 23, 59, 0), 'All Day', 1439 ]
+        ],
+        mapper: {
+          startname: 'start',
+          endname: 'end',
+          tooltip: ['number', 'start']
+        },
+        timeaxis: {
+          end: datelib.modifyUTC(datelib.createUTC(null, null, null, 23, 59, 0), 1, 'd'),
+          granularity: 'mi'
+        }
+      },
+      illustrator: {
+        config: {
+          axis: {
+            tickInterval: 120
+          },
+          view: {
+            showGrid: false,
+            showPositionMarker: false,
+            tooltip: function() {
+              return 'Some marks: ?ßgGÁ\nSome marks: ?ßgGÁ';
+            },
+            theme: {
+              intervalColor: '#f7a35c',
+              intervalHeight: 40,
+              intervalBorderSize: 1
+            }
+          }
+        }
+      }
+    });
+  chartFixedData2.resize(1200, 300);
+  
+  var chartFixedData3 = $("#chartFixedData3").ganttChart({
+      data: {
+        names: ['start', 'end', 'value', 'number'],
+        records: [
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 2, 0, 0), '2 Hours', 120 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 4, 0, 0), '4 Hours', 240 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 6, 0, 0), '6 Hours', 360 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 8, 0, 0), '8 Hours', 480 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 10, 0, 0), '10 Hours', 600 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 12, 0, 0), '12 Hours', 720 ],
+          [ datelib.createUTC(null, null, null, 0, 0, 0), datelib.createUTC(null, null, null, 23, 59, 0), 'All Day', 1439 ]
+        ],
+        mapper: {
+          startname: 'start',
+          endname: 'end',
+          tooltip: ['number', 'start', 'end']
+        },
+        timeaxis: {
+          end: datelib.modifyUTC(datelib.createUTC(null, null, null, 23, 59, 0), 1, 'd'),
+          granularity: 'mi'
+        }
+      },
+      illustrator: {
+        config: {
+          axis: {
+            tickInterval: 120
+          },
+          view: {
+            showGrid: false,
+            showPositionMarker: false,
+            tooltip: '<span style="color: \'#FF00FF\'">{1}</span>\n<span style="fill: #FF0000">Start:</span> {2|d|HH:mm:ss}, <span style="fill: #FF0000">End:</span> {3|d|HH:mm:ss}',
+            theme: {
+              intervalColor: '#f7a35c',
+              intervalHeight: 40,
+              intervalBorderSize: 1,
+              tooltipSize: 25
+            }
+          }
+        }
+      }
+    });
+  chartFixedData3.resize(1200, 300);
 
   var chartLoadedData = $("#chartLoadedData").ganttChart({
       data: {
@@ -67,7 +159,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
           endname: 'end',
           group: ['callergender', 'recipientgender'],
           label: ['callergender', 'start', 'caller'],
-          tooltip: ['caller', 'recipient']
+          tooltip: ['caller', 'recipient', 'start']
         },
         timeaxis: {
           start: datelib.createUTC(2013, 9, 1),
@@ -83,6 +175,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
           },
           view: {
             showBorder: false,
+            tooltip: '{1} called {2}\nat {3|d|dd.MM.yyyy}',
             coloring: {
               groupMapping: {
                 '["Female","Female"]': '#7cb5ec',

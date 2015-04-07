@@ -1,4 +1,4 @@
-define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrary) {
+define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/date/DateLibrary'], function ($, svgLibrary, dateLibrary) {
   
   var util = {
     
@@ -24,19 +24,49 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       return shadow;
     },
     
-    createToolTipPath: function(canvasEl, el, mouse, text, margin, curveRadius, arrowSize) {
-      curveRadius = typeof(curveRadius) == 'undefined' || curveRadius == null ? 3 : curveRadius;
-      arrowSize = typeof(arrowSize) == 'undefined' || arrowSize == null ? 6 : arrowSize;
-      margin = typeof(margin) == 'undefined' || margin == null ? 0 : margin;
+    getLineHeight: function(fontSize) {
+      return 1.2 * fontSize;
+    },
+    
+    createToolTipPath: function(canvasEl, el, mouse, text, theme) {
+      curveRadius = typeof(theme) == 'undefined' ? 3 : theme.tooltipRadius;
+      arrowSize = typeof(theme) == 'undefined' ? 6 : theme.tooltipArrow;
+      margin = typeof(theme) == 'undefined' ? 0 : theme.tooltipMargin;
       
       // get the position of the element
       var canvasBbox = canvasEl.get(0).getBBox();
       var bbox = el.get(0).getBBox();
+           
+      // make sure we have a valid instance
+      if (text instanceof jQuery == false) {
+        return null;
+      }
+
+      /*
+       * Calculate the size of the box. Typically this should be very easy,
+       * just get the BBox of the box like done above:
+       *   canvasEl.append(text);
+       *   var textBbox = text.get(0).getBBox();
+       *
+       *   var textWidth = Math.max(1.5 * arrowSize, textBbox.width);
+       *   var textHeight = Math.max(1.5 * arrowSize, textBbox.height);
+       *
+       *   text.remove();
+       * Nevertheless, thanks to Internet Explorer (<= 11), and the missing
+       * support of dominant-baseline as well as the miss-calculation of the 
+       * text height, we have to do it differently.
+       */
+      
+      // append the text to determine the size and remove it
+      canvasEl.append(text);
+      var textBbox = text.get(0).getBBox();
+      text.remove();
       
       // determine the size of the text
-      var textWidth = 100;
-      var textHeight = 50;
-      
+      var textWidth = Math.max(1.5 * arrowSize, textBbox.width);
+      var textHeight = Math.max(1.5 * arrowSize, text.children('tspan').size() * util.getLineHeight(theme.tooltipSize));
+      var offsetYText = 0.4 * textHeight;
+
       // calculate the full size of the tool-tip
       var totalMargin = 2 * margin;
       var toolTipWidth = textWidth + 2 * curveRadius;
@@ -111,14 +141,14 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       
       // calculate the different positions needed
       var leftX1 = posTopX;
-      var leftX2 = posTopX + curveRadius;
-      var rightX1 = posTopX + textWidth;
-      var rightX2 = posTopX + textWidth + curveRadius;
+      var leftX2 = leftX1 + curveRadius;
+      var rightX1 = leftX2 + textWidth;
+      var rightX2 = rightX1 + curveRadius;
       
       var topY1 = posTopY;
-      var topY2 = posTopY + curveRadius;
-      var bottomY1 = posTopY + textHeight;
-      var bottomY2 = posTopY + textHeight + curveRadius;
+      var topY2 = topY1 + curveRadius;
+      var bottomY1 = topY2 + textHeight;
+      var bottomY2 = bottomY1 + curveRadius;
       
       var posArrowStart = posArrow - arrowSize;
       var posArrowEnd = posArrow + arrowSize;
@@ -138,7 +168,15 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
       path += 'L ' + leftX1 + ' ' + topY2;
       path += 'C ' + leftX1 + ' ' + topY1 + ' ' + leftX1 + ' ' + topY1 + ' ' + leftX2 + ' ' + topY1;
       
-      return path;
+      return {
+        path: path,
+        x: leftX2,
+        y: topY2,
+        textX: leftX2,
+        textY: topY2 + offsetYText,
+        textWidth: textWidth,
+        textHeight: textHeight
+      };
     },
     
     validateScale: function(el) {
@@ -316,6 +354,97 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
           }
         }
       },
+
+      tooltip: null,
+      
+      formatter: {
+        tooltip: function(interval, map, textFormat, theme) {
+
+          // get the values defined for the tool-tip
+          var raw = interval.get(IntervalView.gRawAttr);
+          var entries = map.get('tooltip', raw);
+          
+          // make sure a tool-tip is defined, return null if none should be shown
+          var entriesSize = entries.length;
+          if ($.type(entries) != 'array' != entriesSize == 0) {
+            return null;
+          }
+          
+          // make sure we have a valid format, otherwise null is returned
+          var formattedText = null;
+          if (textFormat == null) {
+            formattedText = $(document.createElementNS('http://www.w3.org/2000/svg', 'text'));
+            for (var i = 0; i < entriesSize; i++) {
+              var tspan = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
+              tspan.text(entries[i]);
+              
+              tspan.attr('x', '0');
+              tspan.attr('dy', i * util.getLineHeight(theme.tooltipSize));
+              
+              formattedText.append(tspan);
+            }
+          } else if ($.type(textFormat) == 'string') {
+            formattedText = $(document.createElementNS('http://www.w3.org/2000/svg', 'text'));
+            
+            var spanReplace = function(text) {
+              var textParser = $('<div>' + text + '</div>');
+              
+              var tspan = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
+              
+              var content = textParser.contents();
+              content.each(function() {                
+                var inner = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
+                inner.text($(this).text());
+                
+                // clone the attributes
+                if (this.nodeType == 1) {
+                  inner.attr('style', $(this).attr('style'));
+                }
+                
+                tspan.append(inner);
+              });
+                            
+              return tspan;
+            };
+            
+            var lines = textFormat.split('\n');
+            var linesSize = lines.length;
+            for (var i = 0; i < linesSize; i++) {
+                            
+              // format and replace span in the lines
+              var text = lines[i].trim();
+              var textParser = $('<div>' + text + '</div>');
+              
+              // check if we have spans defined
+              var tspan = null;
+              if (textParser.find('span').length > 0) {
+                tspan = spanReplace(text);
+              } else {
+                tspan = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
+                tspan.text(text);
+              }
+
+              // position it
+              tspan.attr('x', '0');
+              tspan.attr('dy', i * util.getLineHeight(theme.tooltipSize));
+              
+              formattedText.append(tspan);
+            }
+          } else if (textFormat instanceof jQuery) {
+            
+            
+            formattedText = textFormat.clone();
+          } else if ($.isFunction(textFormat)){
+            formattedText = this.tooltip(interval, map, textFormat(interval, map), theme);
+          } else {
+            
+            // unsupported type
+            formattedText = null;
+          }
+          
+          return formattedText;
+        }
+      },
       
       theme: {
         backgroundColor: '#FFFFFF',
@@ -340,6 +469,9 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         borderSize: 1,
         
         tooltipMargin: 2,
+        tooltipArrow: 6,
+        tooltipRadius: 3,
+        tooltipSize: 11,
         
         intervalMarginInPx: null
       }
@@ -430,7 +562,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         this.mousemoveMask = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
         this.mousemoveMask.attr('class', 'gantt-view-mousemovemask');
         this.mousemoveMask.appendTo(canvas);
-        
+                
         // create invisible mask for mouse-over
         var _ref = this;
         var moveArea = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
@@ -611,18 +743,36 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
             shadowOuter = this.tooltip.children('#gantt-view-tooltip-shadow-outer');
           }
 
-          var path = util.createToolTipPath(this.mousemoveMask, el, this.mouse, 'Tool', this.opts.theme.tooltipMargin);
-          if (path == null) {
+          var text = this.opts.formatter.tooltip(interval, this.map, this.opts.tooltip, this.opts.theme);
+          if (text == null || typeof(text) == 'undefined' || !text.is('text')) {
             this.tooltip.css('visibility', 'hidden');
           } else {
-          
-            // format the tool-tip for the current interval
-            shadowInner.attr({ 'd': path });
-            shadow.attr({ 'd': path });
-            shadowOuter.attr({ 'd': path });
-            border.attr({ 'd': path });
-            border.css({ 'stroke': interval.get(IntervalView.gColor) });          
-            this.tooltip.css('visibility', 'visible');
+            
+            // set some properties
+            text.css({ 'fontSize': this.opts.theme.tooltipSize + 'px', 'fill': '#FF00FF', 'color': '#FF00FF', 'cursor': 'default' });
+              
+            // get the path
+            var path = util.createToolTipPath(this.mousemoveMask, el, this.mouse, text, this.opts.theme);
+            if (path == null) {
+              this.tooltip.css('visibility', 'hidden');
+            } else {
+              text.attr('transform', 'translate(' + path.x + ',0)'); 
+
+              // format the tool-tip for the current interval
+              shadowInner.attr({ 'd': path.path });
+              shadow.attr({ 'd': path.path });
+              shadowOuter.attr({ 'd': path.path });
+              border.attr({ 'd': path.path });
+              border.css({ 'stroke': interval.get(IntervalView.gColor) });          
+              
+              // add the text
+              this.tooltip.children('text').remove();
+              text.attr({ x: path.textX, y: path.textY });
+              this.tooltip.append(text);
+              
+              // show it
+              this.tooltip.css('visibility', 'visible');
+            }
           }
         }
       }
@@ -737,8 +887,11 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary'], function ($, svgLibrar
         // determine the x-position and width
         var x1 = this.resolver.getRelativePixelPos(interval.start);
         var x2 = this.resolver.getRelativePixelPos(interval.end);
-        var width = Math.max(1.0, x2 - x1);
-        x2 += width;
+        var width = x2 - x1;
+        if (width < 1.0) {
+          width = 1.0;
+          x2 = x1 + width; 
+        }
         
         /*
          * Check if we currently have a swimlane.

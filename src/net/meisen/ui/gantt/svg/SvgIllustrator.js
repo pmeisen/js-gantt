@@ -136,7 +136,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
       var totalPosY = this.opts.general.margin;
       
       var timeaxisSize = this.timeaxis.getSize();
-      var scrollbarSize = this.scrollbar.getSize();
+      var scrollbarSize = this.scrollbar.isVisible() ? this.scrollbar.getSize() : { height: 0, width: 0 };
 
       var scrollbarLeft = totalPosX;
       var scrollbarTop = totalPosY + totalHeight - scrollbarSize.height;

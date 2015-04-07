@@ -25,8 +25,8 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
         tick.appendTo(g);
         
         var label = $(document.createElementNS('http://www.w3.org/2000/svg', 'text'));
-        label.attr({ 'x': x, 'y': 20 });
-        label.css({ 'color': theme.labelColor, 'cursor': 'default', 'fontSize': theme.labelSize, 'fill': theme.labelColor });
+        label.attr({ 'x': x, 'y': theme.labelSize + 10 });
+        label.css({ 'color': theme.labelColor, 'cursor': 'default', 'fontSize': theme.labelSize + 'px', 'fill': theme.labelColor });
         
         var text = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
         text.attr({ 'x': x, 'text-anchor': 'middle' });
@@ -105,7 +105,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
         tickColor: '#C0D0E0',
         tickWidth: 1,
         labelColor: '#606060',
-        labelSize: '11px'
+        labelSize: 11
       }
     },
     
@@ -324,7 +324,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
           // set the new text
           tspanMain.text(formattedText.substring(0, pos));
           tspanSub.text(formattedText.substring(pos + 1));
-          tspanSub.attr({ 'text-anchor': 'middle', 'x': tspanMain.attr('x'), 'dy': 13 });
+          tspanSub.attr({ 'text-anchor': 'middle', 'x': tspanMain.attr('x'), 'dy': 1.2 * this.opts.theme.labelSize });
         }
       } else if (tspans.size() > 1) {
         tspans.slice(1).remove();

@@ -211,7 +211,7 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
         this.view = { position: position, size: size, total: total };
       }
       
-      if (!this.opts.hideOnNoScroll || this.isScrollable()) {
+      if (this.isVisible()) {
         this.bar.css('visibility', 'visible');
       } else {
         this.bar.css('visibility', 'hidden');
@@ -247,8 +247,12 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
       }
     },
     
+    isVisible: function() {
+      return !this.opts.hideOnNoScroll || this.isScrollable();
+    },
+    
     isScrollable: function() {
-      return this.view.size != this.view.total
+      return this.view.size != this.view.total;
     },
     
     pixelToCoord: function(pixel) {
