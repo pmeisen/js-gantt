@@ -104,7 +104,7 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
       },
       hideOnNoScroll: true,
       propagateScrollOnNoMove: false,
-      step: 1
+      step: null
     },
     
     init: function(canvas, cfg) {
@@ -176,7 +176,8 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
     },
     
     move: function(direction, steps) {      
-      steps = typeof(steps) == 'undefined' || steps == null ? this.view.size - 1 : steps;
+      steps = typeof(steps) == 'undefined' ? this.view.size - 1 : steps;
+      steps = steps == null ? Math.max(1.0, this.view.size / 10) : steps;
       
       var newPosition = this.view.position + ((direction == 'left' || direction == 'top' ? -1 : 1) * steps);
       newPosition = Math.max(0, newPosition);

@@ -159,7 +159,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
           endname: 'end',
           group: ['callergender', 'recipientgender'],
           label: ['callergender', 'start', 'caller'],
-          tooltip: ['caller', 'recipient', 'start']
+          tooltip: ['caller', 'recipient', 'start', 'end']
         },
         timeaxis: {
           start: datelib.createUTC(2013, 9, 1),
@@ -175,7 +175,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
           },
           view: {
             showBorder: false,
-            tooltip: '{1} called {2}\nat {3|date|dd.MM.yyyy}',
+            tooltip: '{1} called {2}\non the {3|date|dd.MM.yyyy} ({3|date|HH:mm} - {4|date|HH:mm})',
             coloring: {
               groupMapping: {
                 '["Female","Female"]': '#7cb5ec',
