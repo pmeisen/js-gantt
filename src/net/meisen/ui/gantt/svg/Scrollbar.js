@@ -319,7 +319,13 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
       var _ref = this;
       el.on(eventName, function(e) {
         var oEvent = e.originalEvent;
-        var delta  = oEvent.deltaY || (-1 * oEvent.wheelDelta);
+        
+        /*
+         * Chrome and Internet Explorer support wheelDelta, whereby FireFox only
+         * returns the deltaY (which is pretty small and 40 seems to be a good value)
+         * to multiply with.
+         */
+        var delta  = (-1 * oEvent.wheelDelta) || 40 * oEvent.deltaY;
         
         var direction = delta > 0 ? 'bottom' : 'top';
         var oldPos = _ref.view.position;
