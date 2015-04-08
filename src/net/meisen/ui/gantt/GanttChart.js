@@ -442,10 +442,12 @@ define(['jquery',
       if (config != null && (typeof(chart) == 'undefined' || chart == null)) {
         var chart = new GanttChart();
         chart.init(el, config);
-        
         el.data('ganttchart', chart);
         charts.push(chart);
       } else if (config == null && typeof(chart) != 'undefined' && chart != null) {
+        charts.push(chart);
+      } else if (config == null && typeof(chart) != 'undefined' && chart != null) {
+        chart.init(el, config);
         charts.push(chart);
       }
     });
