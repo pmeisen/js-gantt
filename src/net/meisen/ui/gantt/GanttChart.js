@@ -165,10 +165,10 @@ define(['jquery',
               start = datelib.createUTC();
             } else if (min == -1) {
               start = new Date(max);
-              start = datelib.createUTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDay());
+              start = datelib.createUTC(start.getUTCFullYear(), start.getUTCMonth() + 1, start.getUTCDate());
             } else {
               start = new Date(min);
-              start = datelib.createUTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDay());
+              start = datelib.createUTC(start.getUTCFullYear(), start.getUTCMonth() + 1, start.getUTCDate());
             }
           }
           
@@ -178,10 +178,10 @@ define(['jquery',
               end = datelib.createUTC(null, null, null, 23, 59, 0);
             } else if (max == -1) {
               end = new Date(min);
-              end = datelib.createUTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDay(), 23, 59, 0);
+              end = datelib.createUTC(end.getUTCFullYear(), end.getUTCMonth() + 1, end.getUTCDate(), 23, 59, 0);
             } else {
               end = new Date(max);
-              end = datelib.createUTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDay(), 23, 59, 0);
+              end = datelib.createUTC(end.getUTCFullYear(), end.getUTCMonth() + 1, end.getUTCDate(), 23, 59, 0);
             }
           }
         }
