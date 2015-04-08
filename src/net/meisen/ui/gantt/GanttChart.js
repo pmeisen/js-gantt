@@ -412,7 +412,7 @@ define(['jquery',
     },
     
     showError: function(data) {
-      if (this.opts.throwException) {
+      if (this.opts.throwException === true) {
         throw data.error;
       } else if (console && $.isFunction(console.error)) {
         console.error(data);
