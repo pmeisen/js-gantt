@@ -421,14 +421,28 @@ define(['jquery',
     // get the arguments
     var config = args.length == 1 && typeof(args[0]) == 'object' ? args[0] : null;
 
-    // create a chart for each element
-    this.each(function () {
-      var chart = new GanttChart();
-      chart.init($(this), config);
-      
-      charts.push(chart);
-    });   
+    // create a chart for each element, if we have a configuration defined
+   
+    if (config == null) {
+      this.each(function () {
+        var el = $(this);
+        var chart = el.data('ganttchart');
         
+        if (typeof(chart) != 'undefined' && chart != null) {
+          charts.push(chart);
+        }
+      });
+    } else {
+      this.each(function () {
+        var el = $(this);
+        var chart = new GanttChart();
+        chart.init(el, config);
+        
+        el.data('ganttchart', chart);
+        charts.push(chart);
+      });   
+    }
+    
     // make the resize function available
     this.resize = function(width, height) {
       $.each(charts, function() {

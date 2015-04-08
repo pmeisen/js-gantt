@@ -53,7 +53,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
         }
       }
     });
-  chartFixedData1.resize(1200, 300);
+  $("#chartFixedData1").ganttChart().resize(1200, 300);
   
   var chartFixedData2 = $("#chartFixedData2").ganttChart({
       data: {
@@ -203,7 +203,7 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
     });
   chartFailData.resize(800, 300);
   
-  var chartEmptyData = $("#chartEmptyData").ganttChart({
+  var chartEmptyData1 = $("#chartEmptyData1").ganttChart({
       data: {
         url: 'http://localhost:10000/data?type=file&file=server/sample.csv&separator=;&limit=0',
         postProcessor: function(data) {
@@ -211,18 +211,16 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
         }
       }
     });
-  chartEmptyData.resize(800, 300);
+  chartEmptyData1.resize(800, 300);
   
-  
-  /*
-  $('<div style="padding: 0.4em; margin: 1em; border: solid 1px #000;">set granularity to days</div>').prependTo(document.body).click(function() {
-    chart.changeGranularity('days');
+  var chartEmptyData2 = $("#chartEmptyData2").ganttChart({
+    data: {
+      names: ['start', 'end'],
+      mapper: {
+        startname: 'start',
+        endname: 'end'
+      }
+    }
   });
-  $('<div style="padding: 0.4em; margin: 1em; border: solid 1px #000;">set granularity to hours</div>').prependTo(document.body).click(function() {
-    chart.changeGranularity('hours');
-  });
-  $('<div style="padding: 0.4em; margin: 1em; border: solid 1px #000;">set granularity to minutes</div>').prependTo(document.body).click(function() {
-    chart.changeGranularity('minutes');
-  });
-  */
+  $("#chartEmptyData2").ganttChart().resize(800, 300);
 });
