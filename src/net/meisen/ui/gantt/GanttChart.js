@@ -250,7 +250,7 @@ define(['jquery',
       this.opts = $.extend(true, {}, this.defaultCfg, cfg);
       
       var selector = selector instanceof jQuery ? selector : $(selector);
-      selector.children('#ganttchart').remove();
+      selector.children('.ganttchart').remove();
 
       this.container = $('<div></div>');
       this.container.addClass('ganttchart');
