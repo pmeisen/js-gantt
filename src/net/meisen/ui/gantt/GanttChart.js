@@ -218,6 +218,8 @@ define(['jquery',
         config: {}
       },
       
+      position: 'center',
+      
       data: {
         url: null,
         postProcessor: function(data) {
@@ -246,10 +248,23 @@ define(['jquery',
     
     init: function(selector, cfg) {
       this.opts = $.extend(true, {}, this.defaultCfg, cfg);
+      
+      var selector = selector instanceof jQuery ? selector : $(selector);
+      selector.children('#ganttchart').remove();
 
-      this.container = selector instanceof jQuery ? selector : $(selector);
-      this.container.css('overflow', 'auto');
+      this.container = $('<div></div>');
+      this.container.addClass('ganttchart');
+      this.container.css('overflow', 'hidden');
       this.container.css('position', 'relative');
+      
+      // set the positioning
+      if (this.opts.position == 'center' || this.opts.position == 'left') {
+        this.container.css('margin-right', 'auto');
+      }
+      if (this.opts.position == 'center' || this.opts.position == 'right') {
+        this.container.css('margin-left', 'auto');
+      }
+      this.container.appendTo(selector);
 
       this.view = $('<div></div>');
       this.view.addClass('ganttview');
@@ -286,7 +301,7 @@ define(['jquery',
         _ref.showError(data);
       }).on('changeTimeaxis', function(event, data) {
         _ref.changeTimeaxis(data.start, data.end, data.granularity, data.force);
-      })
+      });
       
       // initialize the illustrator
       this.illustrator = this.opts.illustrator.factory();
@@ -302,7 +317,6 @@ define(['jquery',
       if (this.masking != 'loading') {
         this.masking = 'loading';   
         
-        this.container.css('overflow', 'hidden');
         this.error.hide();
         this.indicator.show();
       }
@@ -310,7 +324,6 @@ define(['jquery',
     
     unmask: function() {
       if (this.masking != null) {
-        this.container.css('overflow', 'auto');
         this.indicator.hide();
         this.error.hide();
         
@@ -402,7 +415,6 @@ define(['jquery',
       if (this.masking != 'error') {
         this.masking = 'error';
         
-        this.container.css('overflow', 'hidden');
         this.indicator.hide();
         this.error.show();
       }
@@ -423,25 +435,20 @@ define(['jquery',
 
     // create a chart for each element, if we have a configuration defined
    
-    if (config == null) {
-      this.each(function () {
-        var el = $(this);
-        var chart = el.data('ganttchart');
-        
-        if (typeof(chart) != 'undefined' && chart != null) {
-          charts.push(chart);
-        }
-      });
-    } else {
-      this.each(function () {
-        var el = $(this);
+    this.each(function () {
+      var el = $(this);
+      var chart = el.data('ganttchart');
+
+      if (config != null && (typeof(chart) == 'undefined' || chart == null)) {
         var chart = new GanttChart();
         chart.init(el, config);
         
         el.data('ganttchart', chart);
         charts.push(chart);
-      });   
-    }
+      } else if (config == null && typeof(chart) != 'undefined' && chart != null) {
+        charts.push(chart);
+      }
+    });
     
     // make the resize function available
     this.resize = function(width, height) {

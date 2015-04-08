@@ -81,6 +81,9 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
       });
       this.canvas.on('layoutable', function() {
         _ref.layout();
+        
+        // trigger the final layout
+        _ref.canvas.trigger('finishedLayouting');
       });
       
       // create a scrollbar for the time-axis
@@ -115,9 +118,6 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
       this.intervalview = new IntervalView();
       this.intervalview.setResolver(this.timeaxis);
       this.intervalview.init(this.canvas, this.opts.view);
-      this.intervalview.on('sizechanged', function(event, data) {
-        _ref.setLayoutStatus('intervalview', true);
-      });
       this.intervalview.on('viewchange', function(event, data) {
           _ref.scrollbar2.setView(data.top, data.swimlanesView, data.swimlanesTotal);
       });
@@ -158,9 +158,6 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
        // set the new size and position of the scrollbar2
       this.scrollbar2.setPosition(intervalviewLeft + intervalviewWidth, intervalviewTop);
       this.scrollbar2.setExtent(intervalviewHeight);
-      
-      // trigger the final layout
-      this.canvas.trigger('finishedLayouting');
     },
     
     resetStatus: function() {
@@ -189,7 +186,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
       }
     },
     
-    resize: function(width, height) {
+    resize: function(width, height) {      
       this.panel.css('width', width);
       this.panel.css('height', height);
       
@@ -201,6 +198,8 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
 
       this.scrollbar.setExtent(width);
       this.timeaxis.setWidth(width - this.opts.axis.padding);
+      
+      this.layout();
     },
     
     draw: function(timeaxisDef, records, map) {
