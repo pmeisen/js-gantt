@@ -220,6 +220,8 @@ define(['jquery',
       
       position: 'center',
       
+      throwException: false,
+      
       data: {
         url: null,
         postProcessor: function(data) {
@@ -410,7 +412,11 @@ define(['jquery',
     },
     
     showError: function(data) {
-      console.error(data);
+      if (this.opts.throwException) {
+        throw data.error;
+      } else if (console && $.isFunction(console.error)) {
+        console.error(data);
+      }
       
       if (this.masking != 'error') {
         this.masking = 'error';
