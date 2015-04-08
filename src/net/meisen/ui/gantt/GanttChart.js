@@ -136,6 +136,7 @@ define(['jquery',
 
       if (needStart || needEnd) {
       
+        // TODO! What if we have numbers
         // get the needed values
         if (records == null || typeof(records) == 'undefined' || !$.isArray(records) || records.length == 0 ||
             map == null || typeof(map) == 'undefined' || map.start == -1 || map.end == -1) {
@@ -145,8 +146,6 @@ define(['jquery',
           var max = -1;
           var min = -1;
           
-          
-          // TODO! What if we have numbers
           $.each(records, function(idx, val) {
             var s = val[map.start].getTime();
             var e = val[map.end].getTime();
@@ -169,6 +168,7 @@ define(['jquery',
               start = datelib.createUTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDay());
             } else {
               start = new Date(min);
+              start = datelib.createUTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDay());
             }
           }
           
@@ -181,6 +181,7 @@ define(['jquery',
               end = datelib.createUTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDay(), 23, 59, 0);
             } else {
               end = new Date(max);
+              end = datelib.createUTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDay(), 23, 59, 0);
             }
           }
         }

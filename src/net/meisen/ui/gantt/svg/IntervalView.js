@@ -356,7 +356,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
       showPositionMarker: true,
       showIntervalMarker: true,
       showPositionToolTip: true,
-      showIntervalToolTip: true,
+      showIntervalToolTip: true, // TODO add this tool-tip
       
       coloring: {
         groupMapping: null,
@@ -480,7 +480,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
         intervalPosition: 'middle',
         intervalHeight: 10,
         intervalColor: '#7CB5EC',
-        intervalBorderColor: '#00FF00',
+        intervalBorderColor: '#99C9F7',
         intervalBorderSize: 1,
         
         gridColor: '#D8D8D8',
