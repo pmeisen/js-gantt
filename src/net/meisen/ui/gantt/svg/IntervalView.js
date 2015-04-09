@@ -1,4 +1,4 @@
-define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/date/DateLibrary'], function ($, svgLibrary, dateLibrary) {
+define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/date/DateLibrary', 'net/meisen/general/number/NumberLibrary'], function ($, svgLibrary, dateLibrary, numberLibrary) {
   
   var util = {
     
@@ -35,28 +35,34 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
       var tmpText = null;
       while ((result = reg.exec(text)) !== null && tmpText != text) {
         tmpText = text;
-        
-        var match = result[0];
-        
-        var idx = result[1];
-        var type = result[2];
-        var format = result[3];
 
-        var replacement;
-        if (type == 'date') {
-          replacement = dateLibrary.formatUTC(data[idx - 1], format);
-        } else if (type == 'number') {
-          replacement = data[idx - 1];
-        } else if (type == 'string' || typeof(type) == 'undefined' || type == null) {
-          replacement = data[idx - 1];
-        } else {
-          replacement = '\u00a0';
-        }
-        
-        text = text.replace(match, replacement);
+        var replacement = util.format(data[result[1] - 1], result[2], result[3]);        
+        text = text.replace(result[0], replacement);
       }
       
       return text;
+    },
+    
+    format: function(value, type, format) {
+      
+      // determine missing parameters
+      type = typeof(type) == 'undefined' ? $.type(value) : type;
+      format = typeof(format) == 'undefined' ? (type == 'number' ? '###,###,###,###,##0.####' : (type == 'date' ? 'dd.MM.yyyy HH:mm:ss' : null)) : format;
+      
+      console.log(type);
+      console.log(format);
+      
+      // determine the resulting value
+      if (type == 'date') {
+        return dateLibrary.formatUTC(value, format);
+      } else if (type == 'number') {
+        return numberLibrary.format(value, format);
+      } else if (type == 'string' || typeof(type) == 'undefined' || type == null) {
+        return value;
+      } else {
+        return '\u00a0';
+      }
+      
     },
     
     createToolTipPath: function(canvasEl, el, mouse, text, theme) {
@@ -408,8 +414,8 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
             formattedText = $(document.createElementNS('http://www.w3.org/2000/svg', 'text'));
             for (var i = 0; i < entriesSize; i++) {
               var tspan = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
-              tspan.text(entries[i]);
-              
+              tspan.text(util.format(entries[i]));
+
               tspan.attr('x', '0');
               tspan.attr('dy', util.getLineHeight(theme.tooltipSize));
               
