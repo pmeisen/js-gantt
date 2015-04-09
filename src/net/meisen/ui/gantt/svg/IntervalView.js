@@ -49,9 +49,6 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
       type = typeof(type) == 'undefined' ? $.type(value) : type;
       format = typeof(format) == 'undefined' ? (type == 'number' ? '###,###,###,###,##0.####' : (type == 'date' ? 'dd.MM.yyyy HH:mm:ss' : null)) : format;
       
-      console.log(type);
-      console.log(format);
-      
       // determine the resulting value
       if (type == 'date') {
         return dateLibrary.formatUTC(value, format);
