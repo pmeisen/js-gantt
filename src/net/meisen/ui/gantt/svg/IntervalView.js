@@ -468,7 +468,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
               formattedText.append(tspan);
             }
           } else if ($.isFunction(textFormat)){
-            formattedText = this.tooltip(interval, map, textFormat(interval, map), theme);
+            formattedText = this.tooltip(interval, map, textFormat(interval, map, interval.get(IntervalView.gRawAttr)), theme);
           } else {
             
             // unsupported type
