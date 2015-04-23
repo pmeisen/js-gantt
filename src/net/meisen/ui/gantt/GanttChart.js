@@ -441,7 +441,6 @@ define(['jquery',
     var config = args.length == 1 && typeof(args[0]) == 'object' ? args[0] : null;
 
     // create a chart for each element, if we have a configuration defined
-   
     this.each(function () {
       var el = $(this);
       var chart = el.data('ganttchart');
