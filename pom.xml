@@ -30,14 +30,6 @@
       <version>1.9.1</version>
     </dependency>
     
-    <!-- only needed if DivIllustrator is used -->
-    <dependency>
-      <groupId>com.datejs</groupId>
-      <artifactId>date</artifactId>
-      <version>1.0-Alpha-1</version>
-      <optional>true</optional>
-    </dependency>
-    
     <dependency>
       <groupId>org.requirejs</groupId>
       <artifactId>require</artifactId>
