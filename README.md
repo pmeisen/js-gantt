@@ -1,7 +1,8 @@
-# js-gantt
+js-gantt
+=============
 
-[![][license img]][license]
+[![license](https://img.shields.io/github/license/pmeisen/js-gantt.svg)](README.MD)
 
-JavaScript Gantt Chart
+(c) 2015 Philipp Meisen
 
-
+This code is licensed under the MIT License (MIT).
