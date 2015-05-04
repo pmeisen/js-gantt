@@ -8,13 +8,23 @@ js-gantt is used to create simple, dependency free gantt-charts.
 ## Examples
 ToBeDone
 
-## HowTo: Configure
+## HowTo: Configuration
 ToBeDone
 
-## HowTo: Use
+## HowTo: Usage
 
 There are several ways on how to use the js-gantt library within your project:
 - as native JavaScript library
 - as [jQuery](https://jquery.com/) plug-in
-- with [requireJs](http://requirejs.org/) dependency
+- as [requireJs](http://requirejs.org/) dependency
 
+In the following the different scenarios are introduced and examples are given.
+ToBeDone
+
+An example project using js-gantt as requireJs dependency can be found [here](https://github.com/pmeisen/dis-timeintervaldataanalyzer-ui).
+
+## Additional license information
+Even if js-gantt is distributed under the MIT license, it should be considered, that the project
+depends on other libraries (e.g. jQuery). Thus, the dependencies of the other libraries have to
+be considered. A list of all dependencies can be found in the [pom.xml](pom.xml) as well as the 
+[LICENSE](LICENSE) file.
