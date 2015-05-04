@@ -1,7 +1,7 @@
 js-gantt
 =============
 
-[![license](https://img.shields.io/github/license/pmeisen/js-gantt.svg)](README.md)
+[![license](https://img.shields.io/github/license/pmeisen/js-gantt.svg)](LICENSE)
 
 (c) 2015 Philipp Meisen
 
