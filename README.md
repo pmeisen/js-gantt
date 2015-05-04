@@ -32,3 +32,5 @@ An example project using js-gantt as requireJs dependency can be found [here](ht
 Even if js-gantt is distributed under the MIT license, it should be considered, that the project
 depends on other libraries (e.g. jQuery). Thus, the dependencies of the other libraries have to
 be considered. A list of all dependencies can be found in the [pom.xml](pom.xml) file.
+
+(c) 2015 Philipp Meisen
