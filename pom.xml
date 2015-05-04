@@ -12,24 +12,29 @@
   
   <!-- the projects dependencies -->
   <dependencies>
+  
+    <!-- MIT License, https://github.com/pmeisen/js-svglibrary --> 
     <dependency>
       <groupId>net.meisen.ui</groupId>
       <artifactId>net-meisen-ui-js-svglibrary</artifactId>
       <version>TRUNK-SNAPSHOT</version>
     </dependency>
     
+    <!-- MIT License, https://github.com/pmeisen/js-misc --> 
     <dependency>
       <groupId>net.meisen.general</groupId>
       <artifactId>net-meisen-general-js-misc</artifactId>
       <version>TRUNK-SNAPSHOT</version>
     </dependency>
-  
+    
+    <!-- MIT License, https://jquery.org/ --> 
     <dependency>
       <groupId>org.jquery</groupId>
       <artifactId>jquery</artifactId>
       <version>1.9.1</version>
     </dependency>
     
+    <!-- MIT License, http://requirejs.org/ --> 
     <dependency>
       <groupId>org.requirejs</groupId>
       <artifactId>require</artifactId>
