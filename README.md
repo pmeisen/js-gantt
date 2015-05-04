@@ -6,8 +6,8 @@ js-gantt
 js-gantt is used to create simple, dependency free gantt-charts.
 
 ## Examples
-[![Example01](/docs/Example01.png)]
-[![Example02](/docs/Example02.png)]
+![Example01](/docs/Example01.png)
+![Example02](/docs/Example02.png)
 
 ## HowTo: Configuration
 ToBeDone
