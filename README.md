@@ -1,2 +1,7 @@
 # js-gantt
-JavaScript Gantt Chart as jQuery PlugIn
+
+[![][license img]][license]
+
+JavaScript Gantt Chart
+
+
