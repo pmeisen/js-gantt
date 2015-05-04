@@ -26,7 +26,7 @@ An example project using js-gantt as requireJs dependency can be found [here](ht
 
 ## Next steps
 - adding swim-lanes to the visualization
-- optimize internally used index-structure (increase performance scrolling performance if > 100 elements are visible)
+- optimize internally used index-structure (increase scrolling performance if > 100 elements are visible)
 
 ## Additional license information
 Even if js-gantt is distributed under the MIT license, it should be considered, that the project
