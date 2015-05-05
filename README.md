@@ -3,7 +3,8 @@ js-gantt
 
 [![license](https://img.shields.io/github/license/pmeisen/js-gantt.svg)](LICENSE)
 
-js-gantt is used to create simple, dependency free gantt-charts.
+js-gantt is used to create simple Gantt-Charts with JavaScript. The implementation offers a
+rich set of configuration possibilities.
 
 ## Examples
 ![Example01](/docs/Example01.png)
