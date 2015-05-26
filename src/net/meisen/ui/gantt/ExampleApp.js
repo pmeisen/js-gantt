@@ -54,6 +54,10 @@ require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/G
       }
     });
   $("#chartFixedData1").ganttChart().resize(1200, 300);
+
+  $(window).resize(function () {
+    $("#chartFixedData1").ganttChart().resize(Math.max(500, Math.random() * 1200), 300);
+  });
   
   var chartFixedData2 = $("#chartFixedData2").ganttChart({
       data: {

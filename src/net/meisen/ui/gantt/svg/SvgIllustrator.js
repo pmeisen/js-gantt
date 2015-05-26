@@ -128,7 +128,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
     
     layout: function() {
       var canvasSize = this.getSize();
-      
+
       var totalHeight = canvasSize.height - 2 * this.opts.general.margin;
       var totalWidth = canvasSize.width - 2 * this.opts.general.margin;
       
@@ -189,7 +189,9 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
     resize: function(width, height) {      
       this.panel.css('width', width);
       this.panel.css('height', height);
-      
+
+      this.canvas.width(width);
+      this.canvas.height(height);
       this.canvas.attr('width', width);
       this.canvas.attr('height', height);
       
