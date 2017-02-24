@@ -7,6 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/public" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/bower_components" />
+      <excludeFolder url="file://$MODULE_DIR$/dist" />
       <excludeFolder url="file://$MODULE_DIR$/node_modules" />
       <excludeFolder url="file://$MODULE_DIR$/server/lib" />
       <excludeFolder url="file://$MODULE_DIR$/server/testLib" />
