@@ -11509,833 +11509,856 @@ define('net/meisen/general/Utility',[], function () {
 });
 define('net/meisen/ui/gantt/svg/Scrollbar',['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
 
-  var utilities = {
-    createArrow: function(size, direction, click, theme) {
-      var arrow = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
-      arrow.attr('class', 'gantt-scrollbar-arrow');
-      
-      el = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
-      el.attr({ 'width': size, 'height': size, 'x': 0, y: 0, 'rx': 0, 'ry': 0 });
-      el.css({ 'fill': theme.buttonColor, 'stroke': theme.buttonColorBorder, 'stroke-width': 1 });
-      el.appendTo(arrow);
-      
-      el = $(document.createElementNS('http://www.w3.org/2000/svg', 'path'));
-      if (direction == 'left') {
-        el.attr({ 'd': 'M 8 4 L 8 10 5 7' });
-      } else if (direction == 'right') {
-        el.attr({ 'd': 'M 6 4 L 6 10 9 7' });
-      } else if (direction == 'top') {
-        el.attr({ 'd': 'M 4 8 L 10 8 7 5' });
-      } else if (direction == 'bottom') {
-        el.attr({ 'd': 'M 4 6 L 10 6 7 9' });
-      }
-      el.css({ 'fill': theme.arrowColor });
-      el.appendTo(arrow);
-      
-      arrow.click(function() {
-        if ($.isFunction(click)) {
-          click({ direction: direction });
+    var utilities = {
+        createArrow: function (size, direction, click, theme) {
+            var arrow = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+            arrow.attr('class', 'gantt-scrollbar-arrow');
+
+            el = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+            el.attr({'width': size, 'height': size, 'x': 0, y: 0, 'rx': 0, 'ry': 0});
+            el.css({'fill': theme.buttonColor, 'stroke': theme.buttonColorBorder, 'stroke-width': 1});
+            el.appendTo(arrow);
+
+            el = $(document.createElementNS('http://www.w3.org/2000/svg', 'path'));
+            if (direction == 'left') {
+                el.attr({'d': 'M 8 4 L 8 10 5 7'});
+            } else if (direction == 'right') {
+                el.attr({'d': 'M 6 4 L 6 10 9 7'});
+            } else if (direction == 'top') {
+                el.attr({'d': 'M 4 8 L 10 8 7 5'});
+            } else if (direction == 'bottom') {
+                el.attr({'d': 'M 4 6 L 10 6 7 9'});
+            }
+            el.css({'fill': theme.arrowColor});
+            el.appendTo(arrow);
+
+            arrow.click(function () {
+                if ($.isFunction(click)) {
+                    click({direction: direction});
+                }
+            });
+
+            return arrow
+        },
+
+        createScroll: function (scrollbar) {
+            var _ref = this;
+
+            return function (event) {
+
+                var status = {
+                    anchor: scrollbar.type == 'horizontal' ? event.pageX : event.pageY,
+                    scrollbar: scrollbar
+                };
+
+                var moveHandler = function (event) {
+                    var isHorizontal = scrollbar.type == 'horizontal';
+                    var pos = isHorizontal ? event.pageX : event.pageY;
+                    var diff = pos - status.anchor;
+
+                    if (diff == 0) {
+                        return;
+                    } else {
+                        var direction = diff < 0 ? (isHorizontal ? 'left' : 'top') : (isHorizontal ? 'right' : 'bottom');
+                        diff = status.scrollbar.pixelToCoord(Math.abs(diff));
+                        status.scrollbar.move(direction, diff);
+                    }
+                    status.anchor = pos;
+                };
+                var disableHandler = function (event) {
+                    $(window).unbind('mousemove', moveHandler);
+                    $(window).unbind('mouseup', disableHandler);
+                };
+
+                $(window).bind('mousemove', moveHandler);
+                $(window).bind('mouseup', disableHandler);
+            };
         }
-      });
-      
-      return arrow
-    }, 
-    
-    createScroll: function(scrollbar) {
-      var _ref = this;
-      
-      return function(event) {
-        
-        var status = {
-          anchor: scrollbar.type == 'horizontal' ? event.pageX : event.pageY,
-          scrollbar: scrollbar
-        };
-                
-        var moveHandler = function(event) {
-          var isHorizontal = scrollbar.type == 'horizontal';
-          var pos = isHorizontal ? event.pageX : event.pageY;
-          var diff = pos - status.anchor;
-          
-          if (diff == 0) {
-            return;
-          } else {
-            var direction = diff < 0 ? (isHorizontal ? 'left' : 'top') : (isHorizontal ? 'right' : 'bottom');
-            diff = status.scrollbar.pixelToCoord(Math.abs(diff));
-            status.scrollbar.move(direction, diff);
-          }
-          status.anchor = pos;
-        };
-        var disableHandler = function(event) {
-          $(window).unbind('mousemove', moveHandler);
-          $(window).unbind('mouseup', disableHandler);
-        };
-        
-        $(window).bind('mousemove', moveHandler);
-        $(window).bind('mouseup', disableHandler);
-      };
-    }
-  };
+    };
 
-  /*
-   * Default constructor...
-   */
-  Scrollbar = function(type) {
-    this.type = typeof(type) == 'undefined' || type == null ? 'horizontal' : type;
-  };
-  
-  /*
-   * Extended prototype
-   */
-  Scrollbar.prototype = {
-    bar: null,
-    scrollarea: null,
-    marker: null,
-    leftArrow: null,
-    rightArrow: null,
-    
-    size: { height: 0, width: 0 },
-    
-    extent: 0,
-    view: {
-      position: 0,
-      size: 0, 
-      total: 0
-    },
-    
-    defaultCfg: {
-      theme: {
-        arrowSize: 14,
-        scrollareaColor: '#EEEEEE',
-        markerColor: '#BFC8D1',
-        buttonColorBorder: '#666666',
-        arrowColor: '#666666',
-        buttonColor: '#EBE7E8'
-      },
-      hideOnNoScroll: true,
-      propagateScrollOnNoMove: false,
-      step: null
-    },
-    
-    init: function(canvas, cfg) {
-      var _ref = this;
-            
-      this.opts = $.extend(true, {}, this.defaultCfg, cfg);
-      
-      // create a group for the scrollbar
-      this.bar = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
-      this.bar.attr('class', 'gantt-scrollbar-container');
-      
-      // create the scrollbar
-      var extentAttribute = this.type == 'horizontal' ? 'height' : 'width';
-      this.scrollarea = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
-      this.scrollarea.attr({ y: 0, 'rx': 0, 'ry': 0 });
-      this.scrollarea.attr(extentAttribute, this.getFixedExtent());
-      this.scrollarea.css({ 'fill': this.opts.theme.scrollareaColor, 'stroke': this.opts.theme.scrollareaColor, 'stroke-width': 1 });
-      this.scrollarea.appendTo(this.bar);
-      this.scrollarea.click(function(event) {
-        var offset = _ref.bar.offset();
+    /*
+     * Default constructor...
+     */
+    Scrollbar = function (type) {
+        this.type = typeof(type) == 'undefined' || type == null ? 'horizontal' : type;
+    };
 
-        var pos = _ref.type == 'horizontal' ? event.pageX - offset.left : event.pageY - offset.top;       
-        var coord = _ref.pixelToCoord(pos - (_ref.getFixedExtent() + 1));
+    /*
+     * Extended prototype
+     */
+    Scrollbar.prototype = {
+        bar: null,
+        scrollarea: null,
+        marker: null,
+        leftArrow: null,
+        rightArrow: null,
 
-        var direction;
-        if (this.type == 'horizontal') {
-          direction = coord < _ref.view.position ? 'left' : 'right';
-        } else {
-          direction = coord < _ref.view.position ? 'top' : 'bottom';
+        size: {height: 0, width: 0},
+
+        extent: 0,
+        view: {
+            position: 0,
+            size: 0,
+            total: 0
+        },
+
+        defaultCfg: {
+            theme: {
+                arrowSize: 14,
+                scrollareaColor: '#EEEEEE',
+                markerColor: '#BFC8D1',
+                buttonColorBorder: '#666666',
+                arrowColor: '#666666',
+                buttonColor: '#EBE7E8'
+            },
+            hideOnNoScroll: true,
+            propagateScrollOnNoMove: false,
+            step: null
+        },
+
+        init: function (canvas, cfg) {
+            var _ref = this;
+
+            this.opts = $.extend(true, {}, this.defaultCfg, cfg);
+console.log(this.opts);
+            // create a group for the scrollbar
+            this.bar = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+            this.bar.attr('class', 'gantt-scrollbar-container');
+
+            // create the scrollbar
+            var extentAttribute = this.type == 'horizontal' ? 'height' : 'width';
+            this.scrollarea = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+            this.scrollarea.attr({y: 0, 'rx': 0, 'ry': 0});
+            this.scrollarea.attr(extentAttribute, this.getFixedExtent());
+            this.scrollarea.css({
+                'fill': this.opts.theme.scrollareaColor,
+                'stroke': this.opts.theme.scrollareaColor,
+                'stroke-width': 1
+            });
+            this.scrollarea.appendTo(this.bar);
+            this.scrollarea.click(function (event) {
+                var offset = _ref.bar.offset();
+
+                var pos = _ref.type == 'horizontal' ? event.pageX - offset.left : event.pageY - offset.top;
+                var coord = _ref.pixelToCoord(pos - (_ref.getFixedExtent() + 1));
+
+                var direction;
+                if (this.type == 'horizontal') {
+                    direction = coord < _ref.view.position ? 'left' : 'right';
+                } else {
+                    direction = coord < _ref.view.position ? 'top' : 'bottom';
+                }
+
+                _ref.move(direction);
+            });
+
+            // create the scroll-marker
+            this.marker = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
+            this.marker.attr({'y': 0, 'rx': 0, 'ry': 0});
+            this.marker.attr(extentAttribute, this.getFixedExtent());
+            this.marker.css({
+                'fill': this.opts.theme.markerColor,
+                'stroke': this.opts.theme.markerColor,
+                'stroke-width': 1,
+                'cursor': 'default'
+            });
+            this.marker.appendTo(this.bar);
+            this.marker.mousedown(utilities.createScroll(this));
+
+            // create the left arrow
+            this.leftArrow = utilities.createArrow(this.getFixedExtent(), this.type == 'horizontal' ? 'left' : 'top', function () {
+                _ref.move('left', _ref.opts.step);
+            }, this.opts.theme);
+            this.leftArrow.appendTo(this.bar);
+
+            // create the right arrow
+            this.rightArrow = utilities.createArrow(this.getFixedExtent(), this.type == 'horizontal' ? 'right' : 'bottom', function () {
+                _ref.move('right', _ref.opts.step);
+            }, this.opts.theme);
+            this.rightArrow.appendTo(this.bar);
+
+            // append the scrollbar
+            this.bar.appendTo(canvas);
+        },
+
+        setPosition: function (x, y) {
+
+            /*
+             * Nicer sharper look, see:
+             * http://stackoverflow.com/questions/18019453/svg-rectangle-blurred-in-all-browsers
+             */
+            x = Math.floor(x) + 0.5;
+            y = Math.floor(y) + 0.5;
+
+            this.bar.attr({'transform': 'translate(' + x + ', ' + y + ')'});
+        },
+
+        move: function (direction, steps) {
+            steps = typeof(steps) == 'undefined' ? this.view.size - 1 : steps;
+            steps = steps == null ? Math.max(1.0, this.view.size / 10) : steps;
+
+            var newPosition = this.view.position + ((direction == 'left' || direction == 'top' ? -1 : 1) * steps);
+            newPosition = Math.max(0, newPosition);
+            newPosition = Math.min(newPosition, this.view.total - this.view.size);
+
+            this.setView(newPosition, null, null, false);
+        },
+
+        setView: function (position, size, total, force) {
+            position = typeof(position) == 'undefined' || position == null ? this.view.position : position;
+            size = typeof(size) == 'undefined' || size == null ? this.view.size : size;
+            total = typeof(total) == 'undefined' || total == null ? this.view.total : total;
+            force = typeof(force) == 'undefined' || force == null ? false : force;
+
+            total = Math.max(0, total);
+            position = Math.max(0, position);
+            size = Math.max(0, size);
+
+            // validate some values
+            if (size > total) {
+                size = total;
+            }
+            if (position + size > total) {
+                position = total - size;
+            }
+
+            // check if we have a change or if it was forced to update
+            var changed = this.view.position != position || this.view.size != size;
+            if (!force && !changed && this.view.total == total) {
+                return;
+            } else {
+                this.view = {position: position, size: size, total: total};
+            }
+
+            if (this.isVisible()) {
+                this.bar.css('visibility', 'visible');
+            } else {
+                this.bar.css('visibility', 'hidden');
+            }
+
+            var offset = this.getFixedExtent() + 1;
+
+            var scrollareaExtent = this.getScrollareaExtent();
+            scrollareaExtent = isNaN(scrollareaExtent) ? 0 : scrollareaExtent;
+
+            var markerExtent = this.coordToPixel(size);
+            var markerPos = offset + this.coordToPixel(position);
+            if (this.type == 'horizontal') {
+                this.marker.attr({'width': markerExtent, 'x': markerPos});
+            } else {
+                this.marker.attr({'height': markerExtent, 'y': markerPos});
+            }
+
+            // trigger the event if there was a change
+            if (changed) {
+                this.bar.trigger('viewchange', {position: position, size: size, total: total});
+
+                // trigger a size change if needed
+                var _ref = this;
+                setTimeout(function () {
+                    var bbox = _ref.bar.get(0).getBBox();
+                    var size = {'height': bbox.height, 'width': bbox.width};
+                    if (_ref.size.height != size.height || _ref.size.width != size.width) {
+                        _ref.size = size;
+                        _ref.bar.trigger('sizechanged', _ref);
+                    }
+                }, 0);
+            }
+        },
+
+        isVisible: function () {
+            console.log('hideOn', this.opts.hideOnNoScroll);
+            return !this.opts.hideOnNoScroll || this.isScrollable();
+        },
+
+        isScrollable: function () {
+            return this.view.size != this.view.total;
+        },
+
+        pixelToCoord: function (pixel) {
+            return pixel * (this.view.total / this.getScrollareaExtent());
+        },
+
+        coordToPixel: function (coord) {
+            return this.view.total == 0 ? 0 : (coord / this.view.total) * this.getScrollareaExtent();
+        },
+
+        setExtent: function (extent, force) {
+            extent = typeof(extent) == 'undefined' || extent == null ? this.extent : extent;
+            force = typeof(force) == 'undefined' || force == null ? false : force;
+
+            // check if we have a change or if it was forced to update
+            if (!force && this.extent == extent) {
+                return;
+            } else {
+                this.extent = extent;
+            }
+
+            // calculate the new values
+            var offset = this.getFixedExtent() + 1;
+            var scrollareaExtent = this.getScrollareaExtent();
+
+            if (this.type == 'horizontal') {
+                this.scrollarea.attr({'width': scrollareaExtent, 'x': offset});
+                this.rightArrow.attr({'transform': 'translate(' + (offset + scrollareaExtent + 1) + ', 0)'});
+            } else {
+                this.scrollarea.attr({'height': scrollareaExtent, 'y': offset});
+                this.rightArrow.attr({'transform': 'translate(0, ' + (offset + scrollareaExtent + 1) + ')'});
+            }
+
+            // force a redraw of the marker
+            this.setView(null, null, null, true);
+        },
+
+        getFixedExtent: function () {
+            return this.opts.theme.arrowSize;
+        },
+
+        getView: function () {
+            return this.view;
+        },
+
+        getExtent: function () {
+            return this.extent;
+        },
+
+        getScrollareaExtent: function () {
+            var offset = this.getFixedExtent() + 1;
+            return Math.max(0, this.extent - 2 * offset);
+        },
+
+        bindToWheel: function (selector) {
+            var el = selector instanceof $ ? selector : $(el);
+
+            var eventName = Utility.getSupportedEvent(['mousewheel', 'wheel']);
+            if (eventName == null) {
+                return;
+            }
+
+            var _ref = this;
+            el.on(eventName, function (e) {
+                var oEvent = e.originalEvent;
+
+                /*
+                 * Chrome and Internet Explorer support wheelDelta, whereby FireFox only
+                 * returns the deltaY (which is pretty small and 40 seems to be a good value)
+                 * to multiply with.
+                 */
+                var delta = (-1 * oEvent.wheelDelta) || 40 * oEvent.deltaY;
+
+                var direction = delta > 0 ? 'bottom' : 'top';
+                var oldPos = _ref.view.position;
+                _ref.move(direction, Math.abs(delta / 120));
+
+                // if there was no scroll propagate it
+                return _ref.opts.propagateScrollOnNoMove && oldPos == _ref.view.position;
+            });
+        },
+
+        on: function (event, handler) {
+            this.bar.on(event, handler);
+        },
+
+        off: function (event, handler) {
+            this.bar.off(event, handler);
+        },
+
+        getSize: function () {
+            return this.size;
         }
-        
-        _ref.move(direction);
-      });
-      
-      // create the scroll-marker
-      this.marker = $(document.createElementNS('http://www.w3.org/2000/svg', 'rect'));
-      this.marker.attr({ 'y': 0, 'rx': 0, 'ry': 0 });
-      this.marker.attr(extentAttribute, this.getFixedExtent());
-      this.marker.css({ 'fill': this.opts.theme.markerColor, 'stroke': this.opts.theme.markerColor, 'stroke-width': 1, 'cursor': 'default' });
-      this.marker.appendTo(this.bar);
-      this.marker.mousedown(utilities.createScroll(this));
-      
-      // create the left arrow
-      this.leftArrow = utilities.createArrow(this.getFixedExtent(), this.type == 'horizontal' ? 'left' : 'top', function() {
-        _ref.move('left', _ref.opts.step);
-      }, this.opts.theme);
-      this.leftArrow.appendTo(this.bar);
-      
-      // create the right arrow
-      this.rightArrow = utilities.createArrow(this.getFixedExtent(), this.type == 'horizontal' ? 'right' : 'bottom', function() {
-        _ref.move('right', _ref.opts.step);
-      }, this.opts.theme);
-      this.rightArrow.appendTo(this.bar);
+    };
 
-      // append the scrollbar
-      this.bar.appendTo(canvas);
-    },
-    
-    setPosition: function(x, y) {
-      
-      /*
-       * Nicer sharper look, see:
-       * http://stackoverflow.com/questions/18019453/svg-rectangle-blurred-in-all-browsers
-       */
-      x = Math.floor(x) + 0.5;
-      y = Math.floor(y) + 0.5;
-      
-      this.bar.attr({ 'transform': 'translate(' + x + ', ' + y + ')' });
-    },
-    
-    move: function(direction, steps) {      
-      steps = typeof(steps) == 'undefined' ? this.view.size - 1 : steps;
-      steps = steps == null ? Math.max(1.0, this.view.size / 10) : steps;
-      
-      var newPosition = this.view.position + ((direction == 'left' || direction == 'top' ? -1 : 1) * steps);
-      newPosition = Math.max(0, newPosition);
-      newPosition = Math.min(newPosition, this.view.total - this.view.size);
-      
-      this.setView(newPosition, null, null, false);
-    },
-    
-    setView: function(position, size, total, force) {
-      position = typeof(position) == 'undefined' || position == null ? this.view.position : position;
-      size = typeof(size) == 'undefined' || size == null ? this.view.size : size;
-      total = typeof(total) == 'undefined' || total == null ? this.view.total : total;
-      force = typeof(force) == 'undefined' || force == null ? false : force;
-      
-      total = Math.max(0, total);
-      position = Math.max(0, position);
-      size = Math.max(0, size);
-      
-      // validate some values
-      if (size > total) {
-        size = total;
-      }
-      if (position + size > total) {
-        position = total - size;
-      }
-      
-      // check if we have a change or if it was forced to update
-      var changed = this.view.position != position || this.view.size != size;
-      if (!force && !changed && this.view.total == total) {
-        return;
-      } else {
-        this.view = { position: position, size: size, total: total };
-      }
-      
-      if (this.isVisible()) {
-        this.bar.css('visibility', 'visible');
-      } else {
-        this.bar.css('visibility', 'hidden');
-      }
-      
-      var offset = this.getFixedExtent() + 1;
-      
-      var scrollareaExtent = this.getScrollareaExtent();
-      scrollareaExtent = isNaN(scrollareaExtent) ? 0 : scrollareaExtent;
-      
-      var markerExtent = this.coordToPixel(size);
-      var markerPos = offset + this.coordToPixel(position);
-      if (this.type == 'horizontal') {
-        this.marker.attr({ 'width': markerExtent, 'x': markerPos });
-      } else {
-        this.marker.attr({ 'height': markerExtent, 'y': markerPos });
-      }
-      
-      // trigger the event if there was a change
-      if (changed) {
-        this.bar.trigger('viewchange', { position: position, size: size, total: total });
-        
-        // trigger a size change if needed
-        var _ref = this;
-        setTimeout(function() { 
-          var bbox = _ref.bar.get(0).getBBox();
-          var size = { 'height': bbox.height, 'width': bbox.width };
-          if (_ref.size.height != size.height || _ref.size.width != size.width) {
-            _ref.size = size;
-            _ref.bar.trigger('sizechanged', _ref);
-          }
-        }, 0); 
-      }
-    },
-    
-    isVisible: function() {
-      return !this.opts.hideOnNoScroll || this.isScrollable();
-    },
-    
-    isScrollable: function() {
-      return this.view.size != this.view.total;
-    },
-    
-    pixelToCoord: function(pixel) {
-      return pixel * (this.view.total / this.getScrollareaExtent());
-    },
-    
-    coordToPixel: function(coord) {
-      return this.view.total == 0 ? 0 : (coord / this.view.total) * this.getScrollareaExtent();
-    },
-    
-    setExtent: function(extent, force) {
-      extent = typeof(extent) == 'undefined' || extent == null ? this.extent : extent;
-      force = typeof(force) == 'undefined' || force == null ? false : force;
-      
-      // check if we have a change or if it was forced to update
-      if (!force && this.extent == extent) {
-        return;
-      } else {
-        this.extent = extent;
-      }
-      
-      // calculate the new values
-      var offset = this.getFixedExtent() + 1;
-      var scrollareaExtent = this.getScrollareaExtent();
-      
-      if (this.type == 'horizontal') {
-        this.scrollarea.attr({ 'width': scrollareaExtent, 'x': offset });
-        this.rightArrow.attr({ 'transform': 'translate(' + (offset + scrollareaExtent + 1) + ', 0)' });
-      } else {
-        this.scrollarea.attr({ 'height': scrollareaExtent, 'y': offset });
-        this.rightArrow.attr({ 'transform': 'translate(0, ' + (offset + scrollareaExtent + 1) + ')' });
-      }
-      
-      // force a redraw of the marker
-      this.setView(null, null, null, true);
-    },
-    
-    getFixedExtent: function() {
-      return this.opts.theme.arrowSize;
-    },
-    
-    getView: function() {
-      return this.view;
-    },
-    
-    getExtent: function() {
-      return this.extent;
-    },
-    
-    getScrollareaExtent: function() {
-      var offset = this.getFixedExtent() + 1;
-      return Math.max(0, this.extent - 2 * offset);
-    },
-    
-    bindToWheel: function(selector) {
-      var el = selector instanceof $ ? selector : $(el);
-      
-      var eventName = Utility.getSupportedEvent([ 'mousewheel', 'wheel' ]);
-      if (eventName == null) {
-        return;
-      }
-      
-      var _ref = this;
-      el.on(eventName, function(e) {
-        var oEvent = e.originalEvent;
-        
-        /*
-         * Chrome and Internet Explorer support wheelDelta, whereby FireFox only
-         * returns the deltaY (which is pretty small and 40 seems to be a good value)
-         * to multiply with.
-         */
-        var delta  = (-1 * oEvent.wheelDelta) || 40 * oEvent.deltaY;
-        
-        var direction = delta > 0 ? 'bottom' : 'top';
-        var oldPos = _ref.view.position;
-        _ref.move(direction, Math.abs(delta / 120));
-        
-        // if there was no scroll propagate it
-        return _ref.opts.propagateScrollOnNoMove && oldPos == _ref.view.position;
-      });
-    },
-    
-    on: function(event, handler) {
-      this.bar.on(event, handler);
-    },
-    
-    off: function(event, handler) {
-      this.bar.off(event, handler);
-    },
-    
-    getSize: function() {
-      return this.size;
-    }
-  };
-    
-  return Scrollbar;
+    return Scrollbar;
 });
 define('net/meisen/ui/gantt/svg/TimeAxis',['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) {
-  
-  var utilities = {
-    drawTicks: function(ticks, gap, numberOfGaps, theme) {
-      
-      // remove all ticks
-      ticks.empty();
-      
-      // create the ticks
-      for (var i = 0; i <= numberOfGaps + 1; i++) {
-        var x = i * gap;
-        
-        var g = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
-        g.attr('class', 'gantt-timeaxis-text');
-        g.css({ '-webkit-touch-callout' : 'none', 
-                '-webkit-user-select' : 'none', 
-                '-khtml-user-select' : 'none', 
-                '-moz-user-select' : 'none', 
-                '-ms-user-select' : 'none', 
-                'user-select' : 'none' });
-        
-        var tick = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
-        tick.attr({ 'x1': x, 'y1': 0, 'x2': x, 'y2': 10 });
-        tick.css({ 'stroke': theme.tickColor, 'stroke-width': theme.tickWidth });
-        tick.appendTo(g);
-        
-        var label = $(document.createElementNS('http://www.w3.org/2000/svg', 'text'));
-        label.attr({ 'x': x, 'y': theme.labelSize + 10 });
-        label.css({ 'color': theme.labelColor, 'cursor': 'default', 'fontSize': theme.labelSize + 'px', 'fill': theme.labelColor });
-        
-        var text = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
-        text.attr({ 'x': x, 'text-anchor': 'middle' });
-        text.appendTo(label);
-        label.appendTo(g);
-        
-        g.appendTo(ticks);
-      }
-    }
-  };
-  
-  /*
-   * Default constructor...
-   */
-  TimeAxis = function() {
-    this.width = 0;
-    this.gap = 0;
-    this.relativeMove = 0;
-    this.size = { 
-      height: 0, 
-      width: 0 
+
+    var utilities = {
+        drawTicks: function (ticks, gap, numberOfGaps, theme) {
+
+            // remove all ticks
+            ticks.empty();
+
+            // create the ticks
+            for (var i = 0; i <= numberOfGaps + 1; i++) {
+                var x = i * gap;
+
+                var g = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+                g.attr('class', 'gantt-timeaxis-text');
+                g.css({
+                    '-webkit-touch-callout': 'none',
+                    '-webkit-user-select': 'none',
+                    '-khtml-user-select': 'none',
+                    '-moz-user-select': 'none',
+                    '-ms-user-select': 'none',
+                    'user-select': 'none'
+                });
+
+                var tick = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+                tick.attr({'x1': x, 'y1': 0, 'x2': x, 'y2': 10});
+                tick.css({'stroke': theme.tickColor, 'stroke-width': theme.tickWidth});
+                tick.appendTo(g);
+
+                var label = $(document.createElementNS('http://www.w3.org/2000/svg', 'text'));
+                label.attr({'x': x, 'y': theme.labelSize + 10});
+                label.css({
+                    'color': theme.labelColor,
+                    'cursor': 'default',
+                    'fontSize': theme.labelSize + 'px',
+                    'fill': theme.labelColor
+                });
+
+                var text = $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan'));
+                text.attr({'x': x, 'text-anchor': 'middle'});
+                text.appendTo(label);
+                label.appendTo(g);
+
+                g.appendTo(ticks);
+            }
+        }
     };
-    this.settings = {
-      type: null,
-      rawstart: null,
-      rawend: null,
-      last: null,
-      level: null
+
+    /*
+     * Default constructor...
+     */
+    TimeAxis = function () {
+        this.width = 0;
+        this.gap = 0;
+        this.relativeMove = 0;
+        this.size = {
+            height: 0,
+            width: 0
+        };
+        this.settings = {
+            type: null,
+            rawstart: null,
+            rawend: null,
+            last: null,
+            level: null
+        };
+        this.view = {
+            position: 0,
+            size: 0,
+            total: 0
+        };
     };
-    this.view = {
-      position: 0,
-      size: 0, 
-      total: 0
+
+    /*
+     * Extended prototype
+     */
+    TimeAxis.prototype = {
+        defaultCfg: {
+            tickInterval: null,
+            formatter: function (value, type, level) {
+                if (type == 'number') {
+                    return value;
+                } else if (type == 'date') {
+
+                    var format;
+                    switch (level) {
+                        case 'y':
+                            format = 'yyyy';
+                            break;
+                        case 'm':
+                            format = 'MM.yyyy';
+                            break;
+                        case 'd':
+                            format = 'dd.MM.yyyy';
+                            break;
+                        case 'h':
+                            format = 'dd.MM.yyyy HH';
+                            break;
+                        case 'mi':
+                            format = 'dd.MM.yyyy HH:mm';
+                            break;
+                        case 's':
+                            format = 'dd.MM.yyyy HH:mm:ss';
+                            break;
+                    }
+
+                    return datelib.formatUTC(value, format);
+                } else {
+                    return value;
+                }
+            },
+            theme: {
+                tickColor: '#C0D0E0',
+                tickWidth: 1,
+                labelColor: '#606060',
+                labelSize: 11
+            }
+        },
+
+        init: function (canvas, cfg) {
+            this.opts = $.extend(true, {}, this.defaultCfg, cfg);
+
+            this.axis = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+            this.axis.attr('class', 'gantt-timeaxis-container');
+
+            // create a separating line
+            this.sepLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
+            this.sepLine.attr({'x1': 0, 'y1': 0, 'y2': 0});
+            this.sepLine.css({'stroke': '#C0D0E0', 'stroke-width': 1});
+            this.sepLine.appendTo(this.axis);
+
+            // create the group of the ticks
+            this.ticks = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
+            this.ticks.attr('class', 'gantt-timeaxis-ticks');
+            this.ticks.appendTo(this.axis);
+
+            var _ref = this;
+            this.ticks.on('labelchange', function () {
+                setTimeout(function () {
+                    _ref.recalibrateLabels();
+                }, 0);
+            });
+
+            this.axis.appendTo(canvas);
+        },
+
+        setWidth: function (width, force) {
+            width = typeof(width) == 'undefined' || width == null ? this.width : width;
+            force = typeof(force) == 'undefined' || force == null ? false : force;
+
+            // check if we have a change or if it was forced to update
+            if (!force && this.width == width) {
+                return;
+            } else {
+                this.width = width;
+            }
+
+            this.sepLine.attr({'x2': width});
+
+            // force a redraw of the marker
+            this.setAxis(null, null, null, true);
+        },
+
+        setView: function (position, size, total, force) {
+            position = typeof(position) == 'undefined' || position == null ? this.view.position : position;
+            size = typeof(size) == 'undefined' || size == null ? this.view.size : size;
+            total = typeof(total) == 'undefined' || total == null ? this.view.total : total;
+            force = typeof(force) == 'undefined' || force == null ? false : force;
+
+            total = Math.max(0, total);
+            position = Math.max(0, position);
+            size = Math.max(0, size);
+
+            // validate some values
+            if (size > total) {
+                size = total;
+            }
+            if (position + size > total) {
+                position = total - size;
+            }
+
+            // check if we have a change or if it was forced to update
+            var redrawTicks = force || this.view.size != size || this.view.total != total;
+            var changed = redrawTicks || this.view.position != position;
+            if (!force && !changed) {
+                return;
+            } else {
+                this.view = {position: position, size: size, total: total};
+            }
+
+            // determine the tickInterval and the number of gaps
+            var numberOfGaps;
+            var tickInterval;
+            if (typeof(this.opts.tickInterval) == 'undefined' || this.opts.tickInterval == null) {
+                tickInterval = 1;
+                while ((numberOfGaps = Math.max(1, Math.ceil((size) / tickInterval))) > 20) {
+                    tickInterval++;
+                }
+            } else {
+                tickInterval = this.opts.tickInterval;
+                numberOfGaps = Math.max(1, Math.ceil((size) / tickInterval));
+            }
+
+            // determine the ratio of one pos value to the pixels
+            var totalWidth = this.getTotalWidth();
+            var ratio = total == 0 ? 0 : totalWidth / (total - 1);
+
+            // use the ratio to calculate the size of the gap and the relativeMove
+            this.gap = tickInterval * ratio;
+            this.relativeMove = this.gap == 0 ? 0 : -1 * ((position * ratio) % this.gap);
+
+            // move the axis based on the current position
+            this.ticks.attr({'transform': 'translate(' + this.relativeMove + ', 0)'});
+
+            // redraw the ticks if needed
+            if (redrawTicks) {
+                utilities.drawTicks(this.ticks, this.gap, numberOfGaps, this.opts.theme);
+            }
+
+            // add the number of the labels
+            var start = Math.round(position / tickInterval) * tickInterval;
+            var i = 0;
+            var _ref = this;
+            this.ticks.find('g').each(function (idx, el) {
+                var tickGroup = $(el);
+
+                // check if the first one is currently used
+                if (idx == 0 && _ref.relativeMove <= -0.5 * _ref.gap) {
+                    tickGroup.removeAttr('data-index');
+                } else {
+                    var pos = start + i * tickInterval;
+                    if (pos < 0 || pos > _ref.settings.last) {
+                        tickGroup.removeAttr('data-index');
+                    } else {
+                        tickGroup.attr('data-index', pos);
+                    }
+                    i++;
+                }
+            });
+
+            // trigger the event if there was a change
+            if (changed) {
+                var data = _ref.getViewPositions();
+                data.rawstart = this.getRawValue(data.start);
+                data.rawend = this.getRawValue(data.end);
+
+                data.axis = this;
+
+                // get the rawValues
+                this.axis.trigger('viewchange', data);
+            }
+
+            // make sure the labels are fixed
+            this.ticks.trigger('labelchange');
+        },
+
+        getTotalWidth: function () {
+            return this.view.size == 0 ? this.width : this.width * (this.view.total - 1) / (this.view.size - 1);
+        },
+
+        recalibrateLabels: function () {
+            var _ref = this;
+
+            this.ticks.children('g').each(function (idx, el) {
+                var tickGroup = $(el);
+                var text = tickGroup.children('text');
+
+                // get the number
+                var number = tickGroup.attr('data-index');
+                number = typeof(number) == 'undefined' || number == null ? -1 : parseInt(number);
+
+                var textNumber = tickGroup.attr('data-format');
+                textNumber = typeof(textNumber) == 'undefined' || textNumber == null ? -1 : parseInt(textNumber);
+
+                // do the formatting if needed
+                if (number != -1 && number != textNumber) {
+                    _ref.formatLabel(number, text);
+                    tickGroup.attr('data-format', number);
+                }
+
+                // determine if the value is out of scope
+                var viewPos = _ref.getViewPositions();
+                if (number == -1 || viewPos.start > number || viewPos.end < number) {
+                    tickGroup.css('visibility', 'hidden');
+                } else {
+                    tickGroup.css('visibility', 'visible');
+                }
+            });
+
+            var bbox = this.axis.get(0).getBBox();
+            var size = {'height': bbox.height, 'width': bbox.width};
+            if (this.size.height != size.height || this.size.width != size.width) {
+                this.size = size;
+                this.axis.trigger('sizechanged', this);
+            }
+        },
+
+        getViewPositions: function () {
+            var sPos = this.view.position;
+            var ePos = Math.max(0, sPos + this.view.size - 1);
+
+            return {start: sPos, end: ePos};
+        },
+
+        formatLabel: function (number, label) {
+            var formattedText = this.opts.formatter(this.getRawValue(number), this.settings.type, this.settings.level);
+            var tspans = label.children('tspan');
+            tspans.text(formattedText);
+
+            // determine if the element has to be shown
+            bbox = label.get(0).getBBox();
+
+            // let's try to split the text if no space is available
+            if (bbox.width > this.gap) {
+
+                // split the text in the middle
+                var middle = Math.floor(formattedText.length * 0.5);
+                var pos = -1;
+                for (var i = 0; i < middle; i++) {
+                    if (formattedText[middle - i] == ' ') {
+                        pos = middle - i;
+                        break;
+                    } else if (formattedText[middle + i] == ' ') {
+                        pos = middle + i;
+                        break;
+                    }
+                }
+
+                if (pos != -1) {
+                    var tspanMain = tspans.eq(0);
+                    var tspanSub = tspans.eq(1);
+                    tspanSub = tspanSub.length == 0 ? $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan')).appendTo(label) : tspanSub;
+
+                    // set the new text
+                    tspanMain.text(formattedText.substring(0, pos));
+                    tspanSub.text(formattedText.substring(pos + 1));
+                    tspanSub.attr({
+                        'text-anchor': 'middle',
+                        'x': tspanMain.attr('x'),
+                        'dy': 1.2 * this.opts.theme.labelSize
+                    });
+                }
+            } else if (tspans.length > 1) {
+                tspans.slice(1).remove();
+            }
+        },
+
+        getLastViewPosition: function () {
+            return this.settings.last;
+        },
+
+        getAmountOfEntries: function () {
+            return this.settings.last + 1;
+        },
+
+        setPosition: function (x, y) {
+
+            /*
+             * Nicer sharper look, see:
+             * http://stackoverflow.com/questions/18019453/svg-rectangle-blurred-in-all-browsers
+             */
+            x = Math.floor(x) + 0.5;
+            y = Math.floor(y) + 0.5;
+            this.axis.attr({'transform': 'translate(' + x + ', ' + y + ')'});
+        },
+
+        getRawValue: function (pos) {
+            pos = typeof(pos) == 'undefined' || pos == null ? 0 : pos;
+
+            if (this.settings.type == 'number') {
+                return pos + this.settings.rawstart;
+            } else if (this.settings.type == 'date') {
+                return datelib.modifyUTC(this.settings.rawstart, pos, this.settings.level, true);
+            } else {
+                return pos;
+            }
+        },
+
+        getPos: function (rawValue) {
+            var pos;
+            if (this.settings.type == 'number') {
+                pos = rawValue - this.settings.rawstart;
+            } else if (this.settings.type == 'date') {
+                pos = datelib.distanceUTC(this.settings.rawstart, rawValue, this.settings.level, true);
+            } else {
+                return null;
+            }
+
+            return pos;
+        },
+
+        getPixelPos: function (rawValue) {
+            var pos = this.getPos(rawValue);
+            return this.getPixelPosOfPos(pos);
+        },
+
+        getPixelPosOfPos: function (pos) {
+            var totalWidth = this.getTotalWidth();
+            var ratio = this.view.total == 0 ? 0 : totalWidth / (this.view.total - 1);
+
+            return pos * ratio + this.relativeMove;
+        },
+
+        getRelativePixelPosOfPos: function (pos) {
+            var pxAxisStartPos = this.getPixelPosOfPos(this.view.position);
+            var pxPos = this.getPixelPosOfPos(pos);
+
+            return pxPos - pxAxisStartPos;
+        },
+
+        getRelativePixelPos: function (rawValue) {
+            var pos = this.getPos(rawValue);
+            return this.getRelativePixelPosOfPos(pos);
+        },
+
+        setAxis: function (start, end, level, force) {
+            var recalc = false;
+
+            // check the start
+            var rawstart;
+            if (typeof(start) == 'undefined' || start == null) {
+                rawstart = this.settings.rawstart;
+            } else {
+                rawstart = start;
+                recalc = true;
+            }
+
+            // check the end
+            var rawend;
+            if (typeof(end) == 'undefined' || end == null) {
+                rawend = this.settings.rawend;
+            } else {
+                rawend = end;
+                recalc = true;
+            }
+
+            // check level and force
+            level = typeof(level) == 'undefined' || level == null ? this.settings.level : datelib.normalizeLevel(level);
+            force = typeof(force) == 'undefined' || force == null ? false : force;
+
+            // determine the type
+            var type;
+            if (rawstart instanceof Date && rawend instanceof Date) {
+                type = 'date';
+            } else if ($.isNumeric(rawstart) && $.isNumeric(rawend)) {
+                type = 'number';
+            } else {
+                type = null;
+            }
+
+            // finally get the last
+            var last;
+            if (recalc) {
+                if (type == 'date') {
+                    last = datelib.distanceUTC(rawstart, rawend, level);
+                } else if (type == 'number') {
+                    last = rawend - rawstart;
+                } else {
+                    last = null;
+                }
+            } else {
+                last = this.settings.last;
+            }
+
+            // check if we have a change or if it was forced to update
+            var changed = recalc || this.settings.type != type || this.settings.last != last || this.settings.level != level;
+            if (!force && !changed) {
+                return;
+            } else {
+                this.settings = {type: type, rawstart: rawstart, rawend: rawend, last: last, level: level};
+            }
+
+            // trigger the event if there was a change
+            this.setView(null, null, null, true);
+        },
+
+        on: function (event, handler) {
+            this.axis.on(event, handler);
+        },
+
+        off: function (event, handler) {
+            this.axis.off(event, handler);
+        },
+
+        getSize: function () {
+            return this.size;
+        }
     };
-  };
-  
-  /*
-   * Extended prototype
-   */
-  TimeAxis.prototype = {
-    defaultCfg: {
-      tickInterval: null,
-      formatter: function(value, type, level) {
-        if (type == 'number') {
-          return value;
-        } else if (type == 'date') {
-          
-          var format;
-          switch (level) {
-            case 'y':
-              format = 'yyyy';
-              break;
-            case 'm':
-              format = 'MM.yyyy';
-              break;
-            case 'd':
-              format = 'dd.MM.yyyy';
-              break;
-            case 'h':
-              format = 'dd.MM.yyyy HH';
-              break;
-            case 'mi':
-              format = 'dd.MM.yyyy HH:mm';
-              break;
-            case 's':
-              format = 'dd.MM.yyyy HH:mm:ss';
-              break;
-          };
-          
-          return datelib.formatUTC(value, format);
-        } else {
-          return value;
-        }
-      },
-      theme: {
-        tickColor: '#C0D0E0',
-        tickWidth: 1,
-        labelColor: '#606060',
-        labelSize: 11
-      }
-    },
-    
-    init: function(canvas, cfg) {
-      this.opts = $.extend(true, {}, this.defaultCfg, cfg);
-      
-      this.axis = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
-      this.axis.attr('class', 'gantt-timeaxis-container');
 
-      // create a separating line
-      this.sepLine = $(document.createElementNS('http://www.w3.org/2000/svg', 'line'));
-      this.sepLine.attr({ 'x1': 0, 'y1': 0, 'y2': 0 });
-      this.sepLine.css({ 'stroke': '#C0D0E0', 'stroke-width': 1 });
-      this.sepLine.appendTo(this.axis);
-      
-      // create the group of the ticks
-      this.ticks = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
-      this.ticks.attr('class', 'gantt-timeaxis-ticks');
-      this.ticks.appendTo(this.axis);
-      
-      var _ref = this;
-      this.ticks.on('labelchange', function() {
-        setTimeout(function() { _ref.recalibrateLabels(); }, 0); 
-      });
-
-      this.axis.appendTo(canvas);
-    },
-         
-    setWidth: function(width, force) {
-      width = typeof(width) == 'undefined' || width == null ? this.width : width;
-      force = typeof(force) == 'undefined' || force == null ? false : force;
-      
-      // check if we have a change or if it was forced to update
-      if (!force && this.width == width) {
-        return;
-      } else {
-        this.width = width;
-      }
-
-      this.sepLine.attr({ 'x2': width });
-      
-      // force a redraw of the marker
-      this.setAxis(null, null, null, true);
-    },
-    
-    setView: function(position, size, total, force) {
-      position = typeof(position) == 'undefined' || position == null ? this.view.position : position;
-      size = typeof(size) == 'undefined' || size == null ? this.view.size : size;
-      total = typeof(total) == 'undefined' || total == null ? this.view.total : total;
-      force = typeof(force) == 'undefined' || force == null ? false : force;
-      
-      total = Math.max(0, total);
-      position = Math.max(0, position);
-      size = Math.max(0, size);
-      
-      // validate some values
-      if (size > total) {
-        size = total;
-      }
-      if (position + size > total) {
-        position = total - size;
-      }
-      
-      // check if we have a change or if it was forced to update
-      var redrawTicks = force || this.view.size != size || this.view.total != total;
-      var changed = redrawTicks || this.view.position != position;      
-      if (!force && !changed) {
-        return;
-      } else {
-        this.view = { position: position, size: size, total: total };
-      }
-      
-      // determine the tickInterval and the number of gaps
-      var numberOfGaps;
-      var tickInterval;
-      if (typeof(this.opts.tickInterval) == 'undefined' || this.opts.tickInterval == null) {
-        tickInterval = 1;
-        while ((numberOfGaps = Math.max(1, Math.ceil((size) / tickInterval))) > 20) {
-          tickInterval++;
-        }
-      } else {
-        tickInterval = this.opts.tickInterval;
-        numberOfGaps = Math.max(1, Math.ceil((size) / tickInterval));
-      }
-
-      // determine the ratio of one pos value to the pixels
-      var totalWidth = this.getTotalWidth();
-      var ratio = total == 0 ? 0 : totalWidth / (total - 1);
-      
-      // use the ratio to calculate the size of the gap and the relativeMove
-      this.gap = tickInterval * ratio;
-      this.relativeMove = this.gap == 0 ? 0 : -1 * ((position * ratio) % this.gap);
-      
-      // move the axis based on the current position
-      this.ticks.attr({ 'transform': 'translate(' + this.relativeMove + ', 0)' });
-
-      // redraw the ticks if needed
-      if (redrawTicks) {
-        utilities.drawTicks(this.ticks, this.gap, numberOfGaps, this.opts.theme);
-      }
-      
-      // add the number of the labels
-      var start = Math.round(position / tickInterval) * tickInterval;
-      var i = 0;
-      var _ref = this;
-      this.ticks.find('g').each(function(idx, el) {
-        var tickGroup = $(el);
-
-        // check if the first one is currently used
-        if (idx == 0 && _ref.relativeMove <= -0.5 * _ref.gap) {
-          tickGroup.removeAttr('data-index');
-        } else {
-          var pos = start + i * tickInterval;
-          if (pos < 0 || pos > _ref.settings.last) {
-            tickGroup.removeAttr('data-index');
-          } else {
-            tickGroup.attr('data-index', pos);
-          }
-          i++;
-        }
-      });
-            
-      // trigger the event if there was a change
-      if (changed) {
-        var data = _ref.getViewPositions();
-        data.rawstart = this.getRawValue(data.start);
-        data.rawend = this.getRawValue(data.end);
-        
-        data.axis = this;
-
-        // get the rawValues
-        this.axis.trigger('viewchange', data);
-      }
-      
-      // make sure the labels are fixed
-      this.ticks.trigger('labelchange');
-    },
-    
-    getTotalWidth: function() {
-      return this.view.size == 0 ? this.width : this.width * (this.view.total - 1) / (this.view.size - 1);
-    },
-    
-    recalibrateLabels: function() {
-      var _ref = this;
-      
-      this.ticks.children('g').each(function(idx, el) {
-        var tickGroup = $(el);
-        var text = tickGroup.children('text');
-        
-        // get the number
-        var number = tickGroup.attr('data-index');
-        number = typeof(number) == 'undefined' || number == null ? -1 : parseInt(number);
-        
-        var textNumber = tickGroup.attr('data-format');
-        textNumber = typeof(textNumber) == 'undefined' || textNumber == null ? -1 : parseInt(textNumber);
-        
-        // do the formatting if needed
-        if (number != -1 && number != textNumber) {
-          _ref.formatLabel(number, text);
-          tickGroup.attr('data-format', number);
-        }
-        
-        // determine if the value is out of scope
-        var viewPos = _ref.getViewPositions();
-        if (number == -1 || viewPos.start > number || viewPos.end < number) {
-          tickGroup.css('visibility', 'hidden');
-        } else {
-          tickGroup.css('visibility', 'visible');
-        }
-      });
-
-      var bbox = this.axis.get(0).getBBox();
-      var size = { 'height': bbox.height, 'width': bbox.width };
-      if (this.size.height != size.height || this.size.width != size.width) {
-        this.size = size;
-        this.axis.trigger('sizechanged', this);
-      }
-    },
-    
-    getViewPositions: function() {
-      var sPos = this.view.position;
-      var ePos = Math.max(0, sPos + this.view.size - 1);
-      
-      return { start: sPos, end: ePos };
-    },
-    
-    formatLabel: function(number, label) {
-      var formattedText = this.opts.formatter(this.getRawValue(number), this.settings.type, this.settings.level);
-      var tspans = label.children('tspan');
-      tspans.text(formattedText);
-      
-      // determine if the element has to be shown
-      bbox = label.get(0).getBBox();
-
-      // let's try to split the text if no space is available
-      if (bbox.width > this.gap) {
-        
-        // split the text in the middle
-        var middle = Math.floor(formattedText.length * 0.5);
-        var pos = -1;
-        for (var i = 0; i < middle; i++) {
-          if (formattedText[middle - i] == ' ') {
-            pos = middle - i;
-            break;
-          } else if (formattedText[middle + i] == ' ') {
-            pos = middle + i;
-            break;
-          }
-        }
-        
-        if (pos != -1) {
-          var tspanMain = tspans.eq(0);
-          var tspanSub = tspans.eq(1);
-          tspanSub = tspanSub.length == 0 ? $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan')).appendTo(label) : tspanSub;
-          
-          // set the new text
-          tspanMain.text(formattedText.substring(0, pos));
-          tspanSub.text(formattedText.substring(pos + 1));
-          tspanSub.attr({ 'text-anchor': 'middle', 'x': tspanMain.attr('x'), 'dy': 1.2 * this.opts.theme.labelSize });
-        }
-      } else if (tspans.length > 1) {
-        tspans.slice(1).remove();
-      }
-    },
-    
-    getLastViewPosition: function() {
-      return this.settings.last;
-    },
-    
-    getAmountOfEntries: function() {
-      return this.settings.last + 1;
-    },
-    
-    setPosition: function(x, y) {
-      
-      /*
-       * Nicer sharper look, see:
-       * http://stackoverflow.com/questions/18019453/svg-rectangle-blurred-in-all-browsers
-       */
-      x = Math.floor(x) + 0.5;
-      y = Math.floor(y) + 0.5;
-      this.axis.attr({ 'transform': 'translate(' + x + ', ' + y + ')' });
-    },
-    
-    getRawValue: function(pos) {
-      pos = typeof(pos) == 'undefined' || pos == null ? 0 : pos;
-      
-      if (this.settings.type == 'number') {
-        return pos + this.settings.rawstart;
-      } else if (this.settings.type == 'date') {
-        return datelib.modifyUTC(this.settings.rawstart, pos, this.settings.level, true);
-      } else {
-        return pos;
-      }
-    },
-            
-    getPos: function(rawValue) {
-      var pos;
-      if (this.settings.type == 'number') {        
-        pos = rawValue - this.settings.rawstart;
-      } else if (this.settings.type == 'date') {        
-        pos = datelib.distanceUTC(this.settings.rawstart, rawValue, this.settings.level, true);
-      } else {
-        return null;
-      }
-      
-      return pos;
-    },
-    
-    getPixelPos: function(rawValue) {
-      var pos = this.getPos(rawValue);
-      return this.getPixelPosOfPos(pos);
-    },
-    
-    getPixelPosOfPos: function(pos) {
-      var totalWidth = this.getTotalWidth();
-      var ratio = this.view.total == 0 ? 0 : totalWidth / (this.view.total - 1);
-
-      return pos * ratio + this.relativeMove;
-    },
-    
-    getRelativePixelPosOfPos: function(pos) {
-      var pxAxisStartPos = this.getPixelPosOfPos(this.view.position);
-      var pxPos = this.getPixelPosOfPos(pos);
-      
-      return pxPos - pxAxisStartPos;
-    },
-    
-    getRelativePixelPos: function(rawValue) {
-      var pos = this.getPos(rawValue);      
-      return this.getRelativePixelPosOfPos(pos);
-    },
-    
-    setAxis: function(start, end, level, force) {
-      var recalc = false;
-      
-      // check the start
-      var rawstart;
-      if (typeof(start) == 'undefined' || start == null) {
-        rawstart = this.settings.rawstart;
-      } else {
-        rawstart = start;
-        recalc = true;
-      }
-      
-      // check the end
-      var rawend;
-      if (typeof(end) == 'undefined' || end == null) {
-        rawend = this.settings.rawend;
-      } else {
-        rawend = end;
-        recalc = true;
-      }
-
-      // check level and force
-      level = typeof(level) == 'undefined' || level == null ? this.settings.level : datelib.normalizeLevel(level);
-      force = typeof(force) == 'undefined' || force == null ? false : force;
-      
-      // determine the type
-      var type;
-      if (rawstart instanceof Date && rawend instanceof Date) {
-        type = 'date';
-      } else if ($.isNumeric(rawstart) && $.isNumeric(rawend)) {
-        type = 'number';
-      } else {
-        type = null;
-      }
-      
-      // finally get the last
-      var last;
-      if (recalc) {
-        if (type == 'date') {
-          last = datelib.distanceUTC(rawstart, rawend, level);
-        } else if (type == 'number') {
-          last = rawend - rawstart;
-        } else {
-          last = null;
-        }
-      } else {
-        last = this.settings.last;
-      }
-      
-      // check if we have a change or if it was forced to update
-      var changed = recalc || this.settings.type != type || this.settings.last != last || this.settings.level != level;
-      if (!force && !changed) {
-        return;
-      } else {
-        this.settings = { type: type, rawstart: rawstart, rawend: rawend, last: last, level: level };
-      }
-            
-      // trigger the event if there was a change
-      this.setView(null, null, null, true);
-    },
-    
-    on: function(event, handler) {
-      this.axis.on(event, handler);
-    },
-    
-    off: function(event, handler) {
-      this.axis.off(event, handler);
-    },
-    
-    getSize: function() {
-      return this.size;
-    }
-  };
-    
-  return TimeAxis;
+    return TimeAxis;
 });
 define('net/meisen/ui/svglibrary/SvgLibrary',['jquery'], function ($) {
 
@@ -13807,283 +13830,289 @@ define('net/meisen/ui/gantt/svg/IntervalView',['jquery', 'net/meisen/ui/svglibra
   return IntervalView;
 });
 define('net/meisen/ui/gantt/svg/SvgIllustrator',['jquery', 'net/meisen/general/date/DateLibrary'
-                , 'net/meisen/general/interval/IntervalCollection'
-                , 'net/meisen/general/interval/Interval'
-                , 'net/meisen/ui/gantt/svg/Scrollbar'
-                , 'net/meisen/ui/gantt/svg/TimeAxis'
-                , 'net/meisen/ui/gantt/svg/IntervalView'], 
-       function ($, datelib
-                  , IntervalCollection
-                  , Interval
-                  , Scrollbar
-                  , TimeAxis
-                  , IntervalView) {
-    
-  /*
-   * Default constructor...
-   */
-  SvgIllustrator = function() {
-    this.layoutStatus = {};
-    this.resetStatus();
-  };
-  
-  /*
-   * Extended prototype
-   */
-  SvgIllustrator.prototype = {
-    defaultCfg: {
-      theme: {
-        fontFamily: '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif',
-        fontSize: '12px'
-      },
-      general: {
-        margin: 2
-      },
-      /*
-       * The view is passed to the view as configuration. Therefore 
-       * all settings of the view can be applied here.
-       */
-      view: {
-      },
-      /*
-       * The axis is passed to the time-axis as configuration. Therefore 
-       * all settings of the axis can be applied here.
-       */
-      axis: {
+        , 'net/meisen/general/interval/IntervalCollection'
+        , 'net/meisen/general/interval/Interval'
+        , 'net/meisen/ui/gantt/svg/Scrollbar'
+        , 'net/meisen/ui/gantt/svg/TimeAxis'
+        , 'net/meisen/ui/gantt/svg/IntervalView'],
+    function ($, datelib
+        , IntervalCollection
+        , Interval
+        , Scrollbar
+        , TimeAxis
+        , IntervalView) {
+
         /*
-         * The viewSize determines how many entries are on
-         * one view. If null the viewSize varies depending on
-         * the defined granularity.
+         * Default constructor...
          */
-        viewSize: null,
+        SvgIllustrator = function () {
+            this.layoutStatus = {};
+            this.resetStatus();
+        };
+
         /*
-         * The left and right padding of the axis.
+         * Extended prototype
          */
-        padding: 100
-      }
-    },
-        
-    init: function(panel, cfg) {
-      this.opts = $.extend(true, {}, this.defaultCfg, cfg);
-      
-      this.panel = panel;
-      this.panel.empty();
-      
-      this.intervalCollection = new IntervalCollection();
-      
-      this.canvas = $(document.createElementNS('http://www.w3.org/2000/svg', 'svg'));
-      this.canvas.attr('version', '1.1');
-      this.canvas.css('fontFamily', this.opts.theme.fontFamily);
-      this.canvas.css('fontSize', this.opts.theme.fontSize);
-      this.canvas.css('cursor', 'default');
-      this.canvas.appendTo(this.panel);
-            
-      // observe the resize event
-      var _ref = this;
-      this.panel.on('sizechanged', function(event, data) {
-        
-        // make sure that the event was triggered for this
-        if (event.target == this) {
-          _ref.resize(data.width, data.height);
-        }
-      });
-      this.canvas.on('layoutable', function() {
-        _ref.layout();
-        
-        // trigger the final layout
-        _ref.canvas.trigger('finishedLayouting');
-      });
-      
-      // create a scrollbar for the time-axis
-      this.scrollbar = new Scrollbar('horizontal');
-      this.scrollbar.init(this.canvas);
-      this.scrollbar.on('viewchange', function(event, data) {
-        _ref.timeaxis.setView(data.position, data.size, data.total);
-      });
-      this.scrollbar.on('sizechanged', function(event, data) {
-        _ref.setLayoutStatus('scrollbar', true);
-      });
-      
-      // create the axis
-      this.timeaxis = new TimeAxis();
-      this.timeaxis.init(this.canvas, this.opts.axis);
-      this.timeaxis.on('viewchange', function(event, data) {
-        _ref.intervalview.setView(data.rawstart, data.rawend, null, null, _ref.timeaxis);
-      });
-      this.timeaxis.on('sizechanged', function(event, data) {
-        _ref.setLayoutStatus('timeaxis', true);
-      });
-      
-      // create a scrollbar for the view's swim-lanes
-      this.scrollbar2 = new Scrollbar('vertical');
-      this.scrollbar2.init(this.canvas, { hideOnNoScroll: false });
-      this.scrollbar2.on('viewchange', function(event, data) {
-        _ref.intervalview.setView(null, null, data.position, data.position + data.size, _ref.timeaxis);
-      });
-      this.scrollbar2.bindToWheel(this.panel);
-      
-      // create the view
-      this.intervalview = new IntervalView();
-      this.intervalview.setResolver(this.timeaxis);
-      this.intervalview.init(this.canvas, this.opts.view);
-      this.intervalview.on('viewchange', function(event, data) {
-          _ref.scrollbar2.setView(data.top, data.swimlanesView, data.swimlanesTotal);
-      });
-      
-      // initialize the scrollbar2
-      this.scrollbar2.setView(0, 1, 1);
-    },
-    
-    layout: function() {
-      var canvasSize = this.getSize();
+        SvgIllustrator.prototype = {
+            defaultCfg: {
+                theme: {
+                    fontFamily: '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif',
+                    fontSize: '12px'
+                },
+                general: {
+                    margin: 2
+                },
+                /*
+                 * The view is passed to the view as configuration. Therefore
+                 * all settings of the view can be applied here.
+                 */
+                view: {},
+                /*
+                 * The axis is passed to the time-axis as configuration. Therefore
+                 * all settings of the axis can be applied here.
+                 */
+                axis: {
+                    /*
+                     * The viewSize determines how many entries are on
+                     * one view. If null the viewSize varies depending on
+                     * the defined granularity.
+                     */
+                    viewSize: null,
+                    /*
+                     * The left and right padding of the axis.
+                     */
+                    padding: 100
+                },
+                scrollbars: {
+                    vertical: {
+                        hideOnNoScroll: false
+                    },
+                    horizontal: {
+                    }
+                }
+            },
 
-      var totalHeight = canvasSize.height - 2 * this.opts.general.margin;
-      var totalWidth = canvasSize.width - 2 * this.opts.general.margin;
-      
-      var totalPosX = this.opts.general.margin;
-      var totalPosY = this.opts.general.margin;
-      
-      var timeaxisSize = this.timeaxis.getSize();
-      var scrollbarSize = this.scrollbar.isVisible() ? this.scrollbar.getSize() : { height: 0, width: 0 };
+            init: function (panel, cfg) {
+                this.opts = $.extend(true, {}, this.defaultCfg, cfg);
 
-      var scrollbarLeft = totalPosX;
-      var scrollbarTop = totalPosY + totalHeight - scrollbarSize.height;
-      this.scrollbar.setPosition(scrollbarLeft, scrollbarTop);
-      
-      var timeaxisLeft = scrollbarLeft + this.opts.axis.padding * 0.5;
-      var timeaxisTop = scrollbarTop - timeaxisSize.height - 5; // add 5 pixel margin
-      
-      this.timeaxis.setPosition(timeaxisLeft, timeaxisTop);
-      
-      // set the new size and position of the view
-      var intervalviewLeft = timeaxisLeft;
-      var intervalviewTop = totalPosY;
-      var intervalviewWidth = Math.max(0, totalWidth - this.opts.axis.padding);
-      var intervalviewHeight = Math.max(0, timeaxisTop - intervalviewTop);
-      this.intervalview.setSize(intervalviewWidth, intervalviewHeight);
-      this.intervalview.setPosition(intervalviewLeft, intervalviewTop);
-      
-       // set the new size and position of the scrollbar2
-      this.scrollbar2.setPosition(intervalviewLeft + intervalviewWidth, intervalviewTop);
-      this.scrollbar2.setExtent(intervalviewHeight);
-    },
-    
-    resetStatus: function() {
-      this.layoutStatus.intervalview = true;
-      this.layoutStatus.timeaxis = false;
-      this.layoutStatus.scrollbar = false;
-      this.layoutStatus.scrollbar2 = true;
-    },
-    
-    setLayoutStatus: function(entity, value) {
-      this.layoutStatus[entity] = value;
-      
-      var status = true;
-      for (var property in this.layoutStatus) {
-        if (this.layoutStatus.hasOwnProperty(property)) {
-          if (this.layoutStatus[property] === false) {
-            status = false;
-            break;
-          }
-        }
-      }
-      
-      if (status) {
-        this.canvas.trigger('layoutable');
-        this.resetStatus();
-      }
-    },
-    
-    resize: function(width, height) {      
-      this.panel.css('width', width);
-      this.panel.css('height', height);
+                this.panel = panel;
+                this.panel.empty();
 
-      this.canvas.width(width);
-      this.canvas.height(height);
-      this.canvas.attr('width', width);
-      this.canvas.attr('height', height);
-      
-      width = width - 2 * this.opts.general.margin;
-      height = height - 2 * this.opts.general.margin;
+                this.intervalCollection = new IntervalCollection();
 
-      this.scrollbar.setExtent(width);
-      this.timeaxis.setWidth(width - this.opts.axis.padding);
-      
-      this.layout();
-    },
-    
-    draw: function(timeaxisDef, records, map) {
-      
-      // get the records into a usable data-structure
-      this.map = map;
-      this.intervalCollection.clear();
-      var intervals = [];
-      for (var i = 0; i < records.length; i++) {
-        var record = records[i];
-        var interval = new Interval(record[map.start], record[map.end]);
-        interval.set(IntervalView.gRawAttr, record);
-        intervals.push(interval);
-      }
-      this.intervalCollection.insertAll(intervals);
+                this.canvas = $(document.createElementNS('http://www.w3.org/2000/svg', 'svg'));
+                this.canvas.attr('version', '1.1');
+                this.canvas.css('fontFamily', this.opts.theme.fontFamily);
+                this.canvas.css('fontSize', this.opts.theme.fontSize);
+                this.canvas.css('cursor', 'default');
+                this.canvas.appendTo(this.panel);
 
-      // set the data of the intervalView
-      this.intervalview.setData(this.intervalCollection, this.map);
-      
-      // set the axis
-      var level = datelib.normalizeLevel(timeaxisDef.granularity);
-      this.timeaxis.setAxis(timeaxisDef.start, timeaxisDef.end, level);
+                // observe the resize event
+                var _ref = this;
+                this.panel.on('sizechanged', function (event, data) {
 
-      // set the view of the scrollbar, everything else will be triggered
-      this.scrollbar.setView(0, this.getViewSize(level), this.timeaxis.getAmountOfEntries());
-    },
-    
-    getViewSize: function(level) {
-      
-      // the size is defined or calculated based on the level used
-      var viewSize;
-      if (typeof(this.opts.axis.viewSize) == 'undefined' || this.opts.axis.viewSize == null) {
-        switch (level) {
-          case 'y':
-            viewSize = 10;
-            break;
-          case 'm':
-            viewSize = 12;
-            break;
-          case 'd':
-            viewSize = 7;
-            break;
-          case 'h':
-            viewSize = 24;
-            break;
-          case 'mi':
-            viewSize = 1440;
-            break;
-          case 's':
-            viewSize = 60 * 1440;
-            break;
-        }
-      } else {
-        viewSize = this.opts.axis.viewSize;
-      }
-      
-      return viewSize;
-    },
-    
-    getSize: function() {
-      return { width: this.canvas.width(), height:  this.canvas.height()};
-    },
-    
-    on: function(event, handler) {
-      this.canvas.on(event, handler);
-    },
-    
-    off: function(event, handler) {
-      this.canvas.off(event, handler);
-    }
-  };
-    
-  return SvgIllustrator;
-});
+                    // make sure that the event was triggered for this
+                    if (event.target == this) {
+                        _ref.resize(data.width, data.height);
+                    }
+                });
+                this.canvas.on('layoutable', function () {
+                    _ref.layout();
+
+                    // trigger the final layout
+                    _ref.canvas.trigger('finishedLayouting');
+                });
+
+                // create a scrollbar for the time-axis
+                this.scrollbar = new Scrollbar('horizontal');
+                this.scrollbar.init(this.canvas, this.opts.scrollbars.horizontal);
+                this.scrollbar.on('viewchange', function (event, data) {
+                    _ref.timeaxis.setView(data.position, data.size, data.total);
+                });
+                this.scrollbar.on('sizechanged', function (event, data) {
+                    _ref.setLayoutStatus('scrollbar', true);
+                });
+
+                // create the axis
+                this.timeaxis = new TimeAxis();
+                this.timeaxis.init(this.canvas, this.opts.axis);
+                this.timeaxis.on('viewchange', function (event, data) {
+                    _ref.intervalview.setView(data.rawstart, data.rawend, null, null, _ref.timeaxis);
+                });
+                this.timeaxis.on('sizechanged', function (event, data) {
+                    _ref.setLayoutStatus('timeaxis', true);
+                });
+
+                // create a scrollbar for the view's swim-lanes
+                this.scrollbar2 = new Scrollbar('vertical');
+                this.scrollbar2.init(this.canvas, this.opts.scrollbars.vertical);
+                this.scrollbar2.on('viewchange', function (event, data) {
+                    _ref.intervalview.setView(null, null, data.position, data.position + data.size, _ref.timeaxis);
+                });
+                this.scrollbar2.bindToWheel(this.panel);
+
+                // create the view
+                this.intervalview = new IntervalView();
+                this.intervalview.setResolver(this.timeaxis);
+                this.intervalview.init(this.canvas, this.opts.view);
+                this.intervalview.on('viewchange', function (event, data) {
+                    _ref.scrollbar2.setView(data.top, data.swimlanesView, data.swimlanesTotal);
+                });
+
+                // initialize the scrollbar2
+                this.scrollbar2.setView(0, 1, 1);
+            },
+
+            layout: function () {
+                var canvasSize = this.getSize();
+
+                var totalHeight = canvasSize.height - 2 * this.opts.general.margin;
+                var totalWidth = canvasSize.width - 2 * this.opts.general.margin;
+
+                var totalPosX = this.opts.general.margin;
+                var totalPosY = this.opts.general.margin;
+
+                var timeaxisSize = this.timeaxis.getSize();
+                var scrollbarSize = this.scrollbar.isVisible() ? this.scrollbar.getSize() : {height: 0, width: 0};
+
+                var scrollbarLeft = totalPosX;
+                var scrollbarTop = totalPosY + totalHeight - scrollbarSize.height;
+                this.scrollbar.setPosition(scrollbarLeft, scrollbarTop);
+
+                var timeaxisLeft = scrollbarLeft + this.opts.axis.padding * 0.5;
+                var timeaxisTop = scrollbarTop - timeaxisSize.height - 5; // add 5 pixel margin
+
+                this.timeaxis.setPosition(timeaxisLeft, timeaxisTop);
+
+                // set the new size and position of the view
+                var intervalviewLeft = timeaxisLeft;
+                var intervalviewTop = totalPosY;
+                var intervalviewWidth = Math.max(0, totalWidth - this.opts.axis.padding);
+                var intervalviewHeight = Math.max(0, timeaxisTop - intervalviewTop);
+                this.intervalview.setSize(intervalviewWidth, intervalviewHeight);
+                this.intervalview.setPosition(intervalviewLeft, intervalviewTop);
+
+                // set the new size and position of the scrollbar2
+                this.scrollbar2.setPosition(intervalviewLeft + intervalviewWidth, intervalviewTop);
+                this.scrollbar2.setExtent(intervalviewHeight);
+            },
+
+            resetStatus: function () {
+                this.layoutStatus.intervalview = true;
+                this.layoutStatus.timeaxis = false;
+                this.layoutStatus.scrollbar = false;
+                this.layoutStatus.scrollbar2 = true;
+            },
+
+            setLayoutStatus: function (entity, value) {
+                this.layoutStatus[entity] = value;
+
+                var status = true;
+                for (var property in this.layoutStatus) {
+                    if (this.layoutStatus.hasOwnProperty(property)) {
+                        if (this.layoutStatus[property] === false) {
+                            status = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (status) {
+                    this.canvas.trigger('layoutable');
+                    this.resetStatus();
+                }
+            },
+
+            resize: function (width, height) {
+                this.panel.css('width', width);
+                this.panel.css('height', height);
+
+                this.canvas.width(width);
+                this.canvas.height(height);
+                this.canvas.attr('width', width);
+                this.canvas.attr('height', height);
+
+                width = width - 2 * this.opts.general.margin;
+                height = height - 2 * this.opts.general.margin;
+
+                this.scrollbar.setExtent(width);
+                this.timeaxis.setWidth(width - this.opts.axis.padding);
+
+                this.layout();
+            },
+
+            draw: function (timeaxisDef, records, map) {
+
+                // get the records into a usable data-structure
+                this.map = map;
+                this.intervalCollection.clear();
+                var intervals = [];
+                for (var i = 0; i < records.length; i++) {
+                    var record = records[i];
+                    var interval = new Interval(record[map.start], record[map.end]);
+                    interval.set(IntervalView.gRawAttr, record);
+                    intervals.push(interval);
+                }
+                this.intervalCollection.insertAll(intervals);
+
+                // set the data of the intervalView
+                this.intervalview.setData(this.intervalCollection, this.map);
+
+                // set the axis
+                var level = datelib.normalizeLevel(timeaxisDef.granularity);
+                this.timeaxis.setAxis(timeaxisDef.start, timeaxisDef.end, level);
+
+                // set the view of the scrollbar, everything else will be triggered
+                this.scrollbar.setView(0, this.getViewSize(level), this.timeaxis.getAmountOfEntries());
+            },
+
+            getViewSize: function (level) {
+
+                // the size is defined or calculated based on the level used
+                var viewSize;
+                if (typeof(this.opts.axis.viewSize) == 'undefined' || this.opts.axis.viewSize == null) {
+                    switch (level) {
+                        case 'y':
+                            viewSize = 10;
+                            break;
+                        case 'm':
+                            viewSize = 12;
+                            break;
+                        case 'd':
+                            viewSize = 7;
+                            break;
+                        case 'h':
+                            viewSize = 24;
+                            break;
+                        case 'mi':
+                            viewSize = 1440;
+                            break;
+                        case 's':
+                            viewSize = 60 * 1440;
+                            break;
+                    }
+                } else {
+                    viewSize = this.opts.axis.viewSize;
+                }
+
+                return viewSize;
+            },
+
+            getSize: function () {
+                return {width: this.canvas.width(), height: this.canvas.height()};
+            },
+
+            on: function (event, handler) {
+                this.canvas.on(event, handler);
+            },
+
+            off: function (event, handler) {
+                this.canvas.off(event, handler);
+            }
+        };
+
+        return SvgIllustrator;
+    });
 define('net/meisen/ui/svglibrary/required-svg/LoadingCircles',[], function () {
 
     /*
