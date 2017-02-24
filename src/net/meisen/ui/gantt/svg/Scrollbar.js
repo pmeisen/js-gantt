@@ -309,7 +309,7 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
     },
     
     bindToWheel: function(selector) {
-      var el = selector instanceof jQuery ? selector : $(el);
+      var el = selector instanceof $ ? selector : $(el);
       
       var eventName = Utility.getSupportedEvent([ 'mousewheel', 'wheel' ]);
       if (eventName == null) {

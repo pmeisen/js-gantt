@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<server xmlns="http://dev.meisen.net/server/config" 
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:e="http://dev.meisen.net/server/config/extension"
+        xsi:schemaLocation="http://dev.meisen.net/server/config http://dev.meisen.net/xsd/server/serverConfig.xsd
+                            http://dev.meisen.net/server/config/extension http://dev.meisen.net/xsd/server/serverConfigExtension.xsd">
+
+  <!-- add the HTTP to accept test-results -->
+  <connector id="MAIN" port="19999" listener="HTTP">
+    <e:extension>
+      <servlet urlmatcher="/data" reloadfile="true" scriptfile="resources/data.js">
+        net.meisen.general.server.http.listener.servlets.ScriptedServlet
+      </servlet>
+    </e:extension>
+  </connector>
+  
+  <!-- make sure we can control the thing -->
+  <connector id="CONTROL" port="19998" listener="CONTROL" />
+  
+  <!-- disable the default -->
+  <connector id="DEFAULT" port="19997" listener="${server.settings.defaultListener}" enable="false" />
+</server>

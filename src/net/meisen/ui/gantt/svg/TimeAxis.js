@@ -319,14 +319,14 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
         if (pos != -1) {
           var tspanMain = tspans.eq(0);
           var tspanSub = tspans.eq(1);
-          tspanSub = tspanSub.size() == 0 ? $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan')).appendTo(label) : tspanSub;
+          tspanSub = tspanSub.length == 0 ? $(document.createElementNS('http://www.w3.org/2000/svg', 'tspan')).appendTo(label) : tspanSub;
           
           // set the new text
           tspanMain.text(formattedText.substring(0, pos));
           tspanSub.text(formattedText.substring(pos + 1));
           tspanSub.attr({ 'text-anchor': 'middle', 'x': tspanMain.attr('x'), 'dy': 1.2 * this.opts.theme.labelSize });
         }
-      } else if (tspans.size() > 1) {
+      } else if (tspans.length > 1) {
         tspans.slice(1).remove();
       }
     },

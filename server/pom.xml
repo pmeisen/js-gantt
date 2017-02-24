@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>unnecessary</groupId>
+    <artifactId>unnecessary</artifactId>
+    <version>1.0.0</version>
+    <name>Sample Server</name>
+    <description>POM for the Sample Server Providing some Data</description>
+    <packaging>zip</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.meisen.general</groupId>
+            <artifactId>net-meisen-general-server-http-listener</artifactId>
+            <version>TRUNK-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</project>

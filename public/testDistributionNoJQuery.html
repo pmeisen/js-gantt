@@ -1,0 +1,80 @@
+<!doctype html>
+
+<html>
+<head>
+    <title>Sample GanttChart</title>
+
+    <!-- add the css files needed -->
+    <link rel="stylesheet" type="text/css" href="css/reset.css"/>
+    <link rel="stylesheet" type="text/css" href="css/format.css"/>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="utf-8">
+
+    <!-- add the main entry point -->
+    <script src="/scripts/js-gantt.js"></script>
+</head>
+<body>
+<div id="chartFixedData" style="height: 500px; margin: 20px auto"></div>
+
+<script>
+    var now = new Date();
+    var config = {
+        data: {
+            names: ['start', 'end', 'value', 'number'],
+            records: [
+                [new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0)),
+                    new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 2, 0, 0)), '2 Hours', 120]
+            ],
+            mapper: {
+                startname: 'start',
+                endname: 'end',
+                tooltip: ['number', 'start']
+            },
+            timeaxis: {
+                end: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 50, 0)),
+                granularity: 'mi'
+            }
+        },
+        illustrator: {
+            config: {
+                axis: {
+                    tickInterval: 120
+                },
+                view: {
+                    showGrid: true,
+                    showPositionMarker: true,
+                    theme: {
+                        intervalColor: '#f7a35c',
+                        intervalHeight: 40,
+                        intervalBorderSize: 1
+                    }
+                }
+            }
+        }
+    };
+
+    var el = document.getElementById('chartFixedData');
+    var chart =  new GanttChart();
+    chart.init(el, {
+        data: {
+            names: ['start', 'end', 'value', 'number'],
+            records: [
+                [new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0)),
+                    new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 2, 0, 0)), '2 Hours', 120]
+            ],
+            mapper: {
+                startname: 'start',
+                endname: 'end',
+                tooltip: ['number', 'start']
+            },
+            timeaxis: {
+                end: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 50, 0)),
+                granularity: 'mi'
+            }
+        }});
+
+    chart.resize(1000, 500);
+</script>
+</body>
+</html>

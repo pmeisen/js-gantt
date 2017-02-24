@@ -1,0 +1,33 @@
+{
+  "name": "js-gantt",
+  "version": "0.5.0",
+  "description": "JavaScript Gantt-Chart Library",
+  "authors": [
+    "Philipp Meisen <philipp@meisen.net>"
+  ],
+  "main": "dist/js-svglibrary.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pmeisen/js-svglibrary",
+    "bump": "git://github.com/pmeisen/js-svglibrary.git"
+  },
+  "keywords": [
+    "gantt",
+    "task",
+    "performance",
+    "utility",
+    "chart",
+    "svg"
+  ],
+  "license": "MIT",
+  "private": false,
+  "dependencies": {},
+  "devDependencies": {
+    "js-svglibrary": ">=0.5.0",
+    "js-misc": ">=0.0.13",
+    "jquery": ">=1.5.0",
+    "almond": "0.3.3",
+    "requirejs": "2.3.3",
+    "qunit": "2.1.1"
+  }
+}

@@ -3,3 +3,5 @@
 /override.properties
 /.classpath
 /.project
+/server/lib
+/server/testLib

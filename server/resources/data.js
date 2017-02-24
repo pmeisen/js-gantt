@@ -146,6 +146,9 @@ if ('file'.equals(type)) {
 var entity = new Packages.org.apache.http.entity.StringEntity(transformToJson(result), Packages.org.apache.http.entity.ContentType.create("text/html", "UTF-8"));
 entity.setContentEncoding('UTF-8');
 response.setEntity(entity);
+response.setHeader("Access-Control-Allow-Origin", "*");
+response.setHeader("Access-Control-Allow-Methods", "*");
+response.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
 // set the status
 response.setStatusCode(status);

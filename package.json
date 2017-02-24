@@ -1,0 +1,41 @@
+{
+  "name": "js-gantt",
+  "version": "0.5.0",
+  "description": "JavaScript Gantt-Chart Library",
+  "authors": [
+    "Philipp Meisen <philipp@meisen.net>"
+  ],
+  "scripts": {
+    "test": "grunt 02-compile-sources"
+  },
+  "main": "dist/js-svglibrary.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pmeisen/js-svglibrary",
+    "bump": "git://github.com/pmeisen/js-svglibrary.git"
+  },
+  "keywords": [
+    "gantt",
+    "task",
+    "performance",
+    "utility",
+    "chart",
+    "svg"
+  ],
+  "license": "MIT",
+  "private": false,
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "1.0.1",
+    "grunt-bower-install-simple": "1.2.3",
+    "grunt-bump": "0.8.0",
+    "grunt-contrib-connect": "1.0.2",
+    "grunt-contrib-copy": "1.0.0",
+    "grunt-contrib-watch": "1.0.0",
+    "grunt-execute": "0.2.2",
+    "grunt-publish": "1.0.0",
+    "grunt-sync-json": "0.4.0",
+    "main-bower-files": "2.13.1",
+    "requirejs": "2.3.3"
+  }
+}

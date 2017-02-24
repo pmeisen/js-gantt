@@ -72,7 +72,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
       var bbox = el.get(0).getBBox();
 
       // make sure we have a valid instance
-      if (text instanceof jQuery == false) {
+      if (text instanceof $ == false) {
         return null;
       }
 
@@ -98,7 +98,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
 
       // determine the size of the text
       var textWidth = Math.max(1.5 * arrowSize, textBbox.width);
-      var textHeight = Math.max(1.5 * arrowSize, text.children('tspan').size() * util.getLineHeight(theme.tooltipSize));
+      var textHeight = Math.max(1.5 * arrowSize, text.children('tspan').length * util.getLineHeight(theme.tooltipSize));
       var offsetYText = -0.2 * util.getLineHeight(theme.tooltipSize);
 
       // calculate the full size of the tool-tip
@@ -536,7 +536,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
 
       // find the defs or create one
       var defs = svg.children('defs');
-      if (defs.size() == 0) {
+      if (defs.length == 0) {
         defs = $(document.createElementNS('http://www.w3.org/2000/svg', 'defs'));
         defs.prependTo(svg);
       }
@@ -1038,7 +1038,7 @@ define(['jquery', 'net/meisen/ui/svglibrary/SvgLibrary', 'net/meisen/general/dat
       }
 
       // generate a new representor if we didn't find one or none was there
-      if (representor == null || representor.size() == 0) {
+      if (representor == null || representor.length == 0) {
 
         // get the color and keep it if we got it
         var color = interval.get(IntervalView.gColor);

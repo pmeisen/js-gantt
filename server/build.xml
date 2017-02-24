@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<project name="js-ui-gantt">
+    <include file="../../tida-workspace/common-libs/ant-util/util-ant.xml"/>
+
+    <target name="01-resolve-dependencies">
+        <resolve-dependencies/>
+    </target>
+
+    <target name="98-run-server">
+        <var name="server.tmp.generic.start.port" value="19998" />
+        <var name="server.tmp.generic.main.port" value="19999" />
+
+        <java classname="net.meisen.general.server.Server" fork="true">
+            <classpath>
+                <pathelement path="./resources"/>
+                <fileset dir="./lib">
+                    <include name="**/*"/>
+                </fileset>
+            </classpath>
+        </java>
+    </target>
+</project>
