@@ -450,7 +450,7 @@ define(['jquery',
                 var sH = rnd(1, 20);
                 var sM = rnd(1, 59);
                 var sS = rnd(1, 59);
-                var eH = rnd(sH, 23);
+                var eH = rnd(sH + 1, 23);
                 var eM = rnd(1, 59);
                 var eS = rnd(1, 59);
 
