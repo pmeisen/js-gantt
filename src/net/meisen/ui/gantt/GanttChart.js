@@ -428,10 +428,10 @@ define(['jquery',
             }
         },
 
-        createSampleData: function (amount) {
+        createSampleData: function (n, amount) {
 
             // just some stuff to create some sample time-intervals
-            var n = new Date();
+            n = typeof n !== n instanceof Date ? n : new Date();
             var createDate = function (h, m, s) {
                 return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), h, m, s));
             };
