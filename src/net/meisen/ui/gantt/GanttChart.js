@@ -426,6 +426,43 @@ define(['jquery',
                 this.indicator.hide();
                 this.error.show();
             }
+        },
+
+        createSampleData: function (amount) {
+
+            // just some stuff to create some sample time-intervals
+            var n = new Date();
+            var createDate = function (h, m, s) {
+                return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), h, m, s));
+            };
+            var createRecord = function (h1, m1, s1, h2, m2, s2, label) {
+                return [
+                    createDate(h1, m1, s1), createDate(h2, m2, s2), label
+                ];
+            };
+            var rnd = function(min, max) {
+                return min + Math.random() * (max - min);
+            };
+
+            var result = [];
+            amount = typeof amount === 'number' ? amount : 5;
+            for (var i = 0; i < amount; i++) {
+                var sH = rnd(1, 20);
+                var sM = rnd(1, 59);
+                var sS = rnd(1, 59);
+                var eH = rnd(sH, 23);
+                var eM = rnd(1, 59);
+                var eS = rnd(1, 59);
+
+                var start = sH * 60 * 60 + sM * 60 + sS;
+                var end = eH * 60 * 60 + eM * 60 + eS;
+
+                var duration = end - start;
+
+                result.push(createRecord(sH, sM, sS, eH, eM, eS, duration + ' seconds'));
+            }
+
+            return result;
         }
     };
 
