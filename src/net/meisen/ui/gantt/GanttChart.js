@@ -441,7 +441,7 @@ define(['jquery',
                 ];
             };
             var rnd = function(min, max) {
-                return min + Math.random() * (max - min);
+                return Math.floor(min + Math.random() * (max - min));
             };
 
             var result = [];
