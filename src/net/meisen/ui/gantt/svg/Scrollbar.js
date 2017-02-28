@@ -258,7 +258,6 @@ console.log(this.opts);
         },
 
         isVisible: function () {
-            console.log('hideOn', this.opts.hideOnNoScroll);
             return !this.opts.hideOnNoScroll || this.isScrollable();
         },
 
