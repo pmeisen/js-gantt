@@ -222,8 +222,8 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'
                     var start = record[map.start];
                     var end = record[map.end];
 
-                    start = start === null || typeof start === 'undefined' ? Interval.MAX_VALUE : start;
-                    end = end === null || typeof end === 'undefined' ? Interval.MAX_VALUE : end;
+                    start = start === null || typeof start === 'undefined' ? timeaxisDef.start : start;
+                    end = end === null || typeof end === 'undefined' ? timeaxisDef.end : end;
 
                     var interval = new Interval(start, end);
                     interval.set(IntervalView.gRawAttr, record);

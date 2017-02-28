@@ -14052,8 +14052,8 @@ define('net/meisen/ui/gantt/svg/SvgIllustrator',['jquery', 'net/meisen/general/d
                     var start = record[map.start];
                     var end = record[map.end];
 
-                    start = start === null || typeof start === 'undefined' ? Interval.MAX_VALUE : start;
-                    end = end === null || typeof end === 'undefined' ? Interval.MAX_VALUE : end;
+                    start = start === null || typeof start === 'undefined' ? timeaxisDef.start : start;
+                    end = end === null || typeof end === 'undefined' ? timeaxisDef.end : end;
 
                     var interval = new Interval(start, end);
                     interval.set(IntervalView.gRawAttr, record);
@@ -14580,7 +14580,7 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
             var map;
             try {
                 map = utilities.generateMap(data.mapper, data.names);
-                utilities.initTimeaxis(data.timeaxis, map, data.records);
+                data.timeaxis = utilities.initTimeaxis(data.timeaxis, map, data.records);
             } catch (error) {
                 this.view.trigger('error', {error: error, message: 'Failed to initialize rendering', nr: '1002'});
                 return;

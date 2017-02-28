@@ -418,7 +418,7 @@ define(['jquery',
             var map;
             try {
                 map = utilities.generateMap(data.mapper, data.names);
-                utilities.initTimeaxis(data.timeaxis, map, data.records);
+                data.timeaxis = utilities.initTimeaxis(data.timeaxis, map, data.records);
             } catch (error) {
                 this.view.trigger('error', {error: error, message: 'Failed to initialize rendering', nr: '1002'});
                 return;
