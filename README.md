@@ -451,6 +451,7 @@ to an interval.
 **Notes**: 
 - the `GanttChart` provides some utility functions, which makes it easier to parse (e.g., `parseString`) or create (e.g., `createUTC`) UTC dates.
 - the `end` date can be `null`, which indicates that the interval has not ended yet (glued to the end of the chart).
+- an example using the data of this example can be found here: [jsFiddle](https://jsfiddle.net/pmeisen/boxtwojx/)
 
 ## Advanced: Bower and RequireJs
 
