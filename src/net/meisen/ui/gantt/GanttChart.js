@@ -292,6 +292,8 @@ define(['jquery',
         },
 
         init: function (selector, cfg) {
+            console.log(this.defaultCfg);
+            console.log(cfg);
             this.opts = $.extend(true, {}, this.defaultCfg, cfg);
 
             selector = selector instanceof $ ? selector : $(selector);
