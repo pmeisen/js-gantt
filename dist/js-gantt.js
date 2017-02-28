@@ -14693,6 +14693,9 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
     // bind internally to the
     GanttChart.bind($);
 
+    // some static stuff
+    GanttChart.DateUtil = datelib;
+
     return GanttChart;
 });
 define('jquery-private',['jquery'], function ($) {
