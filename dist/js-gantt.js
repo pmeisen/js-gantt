@@ -14629,7 +14629,7 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
         },
 
         createSampleData: function (n, amount) {
-            return utilities.createSampleEnd(n, amount);
+            return utilities.createSampleData(n, amount);
         }
     };
 
