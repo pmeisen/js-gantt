@@ -101,9 +101,15 @@ This example demonstrates how easy it is to use the library and config some diff
     - axis
     - theme (interval size)
 
-### Coloring: 
+### Rule-based Coloring: Example on how to utilize coloring
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pmeisen/js-gantt/master/resources/color-example.png" alt="Coloring Example" width="400">
+</p>
 
+https://jsfiddle.net/pmeisen/sL7dckbs/
+
+The example shows how to use the `colorizer` to specify rule-based colors for the intervals. 
 
 ## Configuration
 

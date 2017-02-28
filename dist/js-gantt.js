@@ -14184,6 +14184,18 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
                 label: mappedLabel,
                 tooltip: mappedTooltip,
 
+                val: function(name, record) {
+                    if (record == null || $.isArray(record) || record.length == 0) {
+                        return;
+                    }
+
+                    $.each(names, function (idx, n) {
+                       if (n == name) {
+                           return record[idx];
+                       }
+                    });
+                },
+
                 get: function (type, record) {
 
                     // get the array
@@ -14199,10 +14211,10 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
                     }
 
                     // make sure we have something
-                    var len = arr.length;
-                    if (arr == null || len == 0) {
+                    if (arr == null || arr.length == 0) {
                         return [];
                     } else {
+                        var len = arr.length;
                         var vals = [];
                         for (var i = 0; i < len; i++) {
                             var val = record[arr[i]];
