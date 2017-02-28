@@ -143,12 +143,71 @@ var config = {
 ### External DataSource: Example on how to use an external data-source
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/pmeisen/js-gantt/master/resources/color-example.png" alt="Coloring Example" width="400">
+  <img src="https://raw.githubusercontent.com/pmeisen/js-gantt/master/resources/json-array-example.png" alt="JSON Array Source Example" width="400">
 </p>
 
-https://jsfiddle.net/pmeisen/sL7dckbs/
+https://jsfiddle.net/pmeisen/r16qfrnx/
 
-Most 
+Most often an external data source is used to visualize data. The library expects the data to be in JSON Array form, i.e.:
+ 
+ ```json
+ [
+   ["Clara","11.06.2014 00:15:32","11.06.2014 00:39:32",24,"Tristan","Maryland","Tajikistan",0.22,5.28,"United States","Asia","Female","Male"  ],
+   ["Niklas","11.06.2014 00:15:35","11.06.2014 01:48:35",93,"Jesko","Florida","Tuvalu",1.84,171.12,"United States","Oceania","Male","Male"  ],
+   ["Niklas","11.06.2014 00:17:25","11.06.2014 00:37:25",20,"Anni","Florida","Cayman Islands",0.24,4.8,"United States","Oceania","Male","Female"  ],
+]
+ ```
+
+There are several good online tools to convert different formats into a JSON data form, e.g., for CSV [convertcsv.com](http://www.convertcsv.com/csv-to-json.htm).
+Nevertheless, sometimes the data that you receive, e.g., from an url is not in JSON form. For that scenario, the library's provides a configuration, which 
+allows you to post-process `JSON` data, e.g., retrieved from a web-service. In the jsFiddle, the loaded data is `post-processed` via the following `function`:
+
+```javascript
+var config = {
+	data: {
+        postProcessor: function (data) {
+            var f = 'dd.MM.yyyy HH:mm:ss';
+            for (var i = 0; i < data.length; i++) {
+                var record = data[i];
+                record[1] = GanttChart.DateUtil.parseString(record[1], f);
+                record[2] = GanttChart.DateUtil.parseString(record[2], f);
+            }
+    
+            return {
+                names:['caller', 'start', 'end', 
+                       'duration', 'recipient', 'origin', 
+                       'destination', 'ratepermin', 'costs', 
+                       'origincontinent', 'destinationcontinent',
+                       'callergender','recipientgender'], 
+                records: data
+            };
+        }
+    }
+};
+```
+
+The post-processor expects an `object` defining the `names` and `records`. The `names` are an array naming the different
+values of each record. It can be understood as the header of a CSV-file. In the records, the named values representing the
+start and end value of the interval, must be a `Date`.
+
+If the returned data is not a `JSON`, the library offers a `loader` configuration, which defines how to load data. The loader 
+must be implemented as:
+
+```
+var config = {
+	data: {
+        postProcessor: function (success, error) {
+            // success and error are both function, with:
+            // - success: function(data);
+            // - error:   function(msg);
+        }
+    }
+};
+```
+
+Further examples using different `post-processor` and `loader` definitions can be found:
+- a
+- b
 
 ## Configuration
 
