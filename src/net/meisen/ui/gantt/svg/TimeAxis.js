@@ -192,7 +192,7 @@ define(['jquery', 'net/meisen/general/date/DateLibrary'], function ($, datelib) 
             var tickInterval;
             if (typeof(this.opts.tickInterval) == 'undefined' || this.opts.tickInterval == null) {
                 tickInterval = 1;
-                while ((numberOfGaps = Math.max(1, Math.ceil((size) / tickInterval))) > 20) {
+                while ((numberOfGaps = Math.max(1, Math.ceil((size) / tickInterval))) > 8) {
                     tickInterval++;
                 }
             } else {

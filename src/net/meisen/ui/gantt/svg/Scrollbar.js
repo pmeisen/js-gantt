@@ -111,7 +111,7 @@ define(['jquery', 'net/meisen/general/Utility'], function ($, Utility) {
             var _ref = this;
 
             this.opts = $.extend(true, {}, this.defaultCfg, cfg);
-console.log(this.opts);
+
             // create a group for the scrollbar
             this.bar = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
             this.bar.attr('class', 'gantt-scrollbar-container');

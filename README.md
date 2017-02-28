@@ -90,7 +90,7 @@ on this library, no additional dependencies needed.
 
 https://jsfiddle.net/pmeisen/pfg7t1uw/
 
-This example demonstrates how easy it is to use the library and configures some different configuration aspects like:
+This example demonstrates how easy it is to use the library and config some different aspects like:
 
 - data:
     - loading of data
@@ -99,7 +99,149 @@ This example demonstrates how easy it is to use the library and configures some 
 - illustrator:
     - scrollbars
     - axis
-    - theme (coloring)
+    - theme (interval size)
+
+## Configuration
+
+The Gantt Chart library provides a rich set of configuration parameters. This paragraph tries to address most of the configurations
+possible. To get an easy start, it is recommend to look at the [Usage Examples](#usage-examples) and adapt the different configuration
+parameters as needed and described here.
+
+A full configuration (with the default settings) is as follows:
+
+```javascript
+var config = {
+    data: {
+        url: null,
+        postProcessor: function (data) {
+            if (!$.isArray(data.names) || !$.isArray(data.records)) {
+                return null;
+            } else {
+                return data;
+            }
+        },
+        mapper: {
+            startname: 'start',
+            endname: 'end',
+            group: [],
+            label: [],
+            tooltip: []
+        },
+        names: ['start', 'end'],
+        records: createSampleData(new Date(), 50),
+        timeaxis: {
+            start: null,
+            end: createSampleEnd(new Date()),
+            granularity: 'mi'
+        }
+    },
+    theme: {
+        loadingBackgroundColor: '#CCCCCC',
+        loadingBackgroundPosition: 'center center',
+        loadingBackgroundRepeat: 'no-repeat',
+        errorBackgroundColor: '#A30B1D'
+    },
+    illustrator: {
+        factory: function () {
+            // the default configuration is based on this usage
+            return new SvgIllustrator();
+        },
+        config: {
+            theme: {
+                fontFamily: '"Lucida Grande", "Lucida Sans Unicode", Arial, Helvetica, sans-serif',
+                fontSize: '12px'
+            },
+            general: {
+                margin: 2
+            },
+            view: {
+                showGrid: true,
+                showBorder: true,
+                showBackground: true,
+                showPositionMarker: true,
+                showIntervalMarker: true,
+                showPositionToolTip: true,
+                showIntervalToolTip: true,
+                coloring: {
+                    groupMapping: null,
+                    colorizer: function (interval, map, defaultColor) {
+                        // there is a default implemented, please have 
+                        // a look at the source-code (IntervalView.js)
+                        // for furhter insights
+                    }
+                },
+                tooltip: null,
+                formatter: {
+                    tooltip: function (interval, map, textFormat, theme) {
+                        // there is a default implemented, please have 
+                        // a look at the source-code (IntervalView.js)
+                        // for furhter insights
+                    }
+                },
+                theme: {
+                    backgroundColor: '#FFFFFF',
+                    laneHeight: null,
+                    intervalPosition: 'middle',
+                    intervalHeight: 20,
+                    intervalColor: '#7CB5EC',
+                    intervalBorderColor: '#99C9F7',
+                    intervalBorderSize: 1,
+                    gridColor: '#D8D8D8',
+                    gridSize: 1,
+                    positionMarkerColor: '#D8D8D8',
+                    positionMarkerSize: 1,
+                    intervalMarkerOpacity: '0.3',
+                    intervalMarkerWidth: null,
+                    borderColor: '#D8D8D8',
+                    borderSize: 1,
+                    tooltipMargin: 2,
+                    tooltipArrow: 6,
+                    tooltipRadius: 3,
+                    tooltipSize: 11,
+                    tooltipTextColor: '#000000',
+                    intervalMarginInPx: null
+                }
+            },
+            axis: {
+                viewSize: null,
+                padding: 100
+            },
+            scrollbars: {
+                vertical: {
+                    theme: {
+                        arrowSize: 14,
+                        scrollareaColor: '#EEEEEE',
+                        markerColor: '#BFC8D1',
+                        buttonColorBorder: '#666666',
+                        arrowColor: '#666666',
+                        buttonColor: '#EBE7E8'
+                    },
+                    hideOnNoScroll: false,
+                    propagateScrollOnNoMove: false,
+                    step: null
+                },
+                horizontal: {
+                    theme: {
+                        arrowSize: 14,
+                        scrollareaColor: '#EEEEEE',
+                        markerColor: '#BFC8D1',
+                        buttonColorBorder: '#666666',
+                        arrowColor: '#666666',
+                        buttonColor: '#EBE7E8'
+                    },
+                    hideOnNoScroll: true,
+                    propagateScrollOnNoMove: false,
+                    step: null
+                }
+            }
+        }
+    },
+    position: 'center',
+    throwException: false
+};
+```
+
+
 
 ## Advanced: Bower and RequireJs
 
