@@ -59,7 +59,10 @@ The library is bound to the `window` instance and thus is directly available for
     chart.init(el, {
         data: {
             names: ['start', 'end', 'label'],
+            records: chart.createSampleData(n, 6),
             mapper: {
+                startname: 'start',
+                endname: 'end',
                 tooltip: ['label']
             },
             timeaxis: {
@@ -128,12 +131,12 @@ var config = {
             label: [],
             tooltip: []
         },
-        names: ['start', 'end'],
-        records: createSampleData(new Date(), 50),
+        names: [],
+        records: [],
         timeaxis: {
             start: null,
-            end: createSampleEnd(new Date()),
-            granularity: 'mi'
+            end: null,
+            granularity: 'days'
         }
     },
     theme: {

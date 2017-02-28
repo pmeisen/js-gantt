@@ -7,9 +7,6 @@ requirejs.config({
 
 // now start the entry-point
 require(['jquery', 'net/meisen/general/date/DateLibrary', 'net/meisen/ui/gantt/GanttChart'], function ($, datelib) {
-    var chartDefault = $("#chartDefault").ganttChart({});
-    chartDefault.resize(700, 300);
-
     var chartFixedData1 = $("#chartFixedData1").ganttChart({
         data: {
             names: ['start', 'end', 'value', 'number'],
