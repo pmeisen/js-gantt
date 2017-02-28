@@ -14184,15 +14184,15 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
                 label: mappedLabel,
                 tooltip: mappedTooltip,
 
-                val: function(name, record) {
+                val: function (name, record) {
                     if (record == null || !$.isArray(record) || record.length == 0) {
                         return;
                     }
 
                     for (var i = 0; i < names.length; i++) {
-                       if (names[i] === name) {
-                           return record[i];
-                       }
+                        if (names[i] === name) {
+                            return record[i];
+                        }
                     }
                 },
 
@@ -14393,6 +14393,7 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
 
             data: {
                 url: null,
+                loader: null,
                 postProcessor: function (data) {
                     if (!$.isArray(data.names) || !$.isArray(data.records)) {
                         return null;
@@ -14531,19 +14532,29 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
         },
 
         load: function () {
+            var _ref = this;
+            var postProcessor = function (data) {
+                var postProcessedData = $.isFunction(_ref.opts.data.postProcessor) ? _ref.opts.data.postProcessor(data) : data;
+                if (postProcessedData == null) {
+                    _ref.view.trigger('error', {error: null, message: 'Postprocessing of data failed', nr: '1001'});
+                } else {
+                    _ref.render(postProcessedData);
+                }
+            };
+
             this.view.trigger('load');
 
             if (typeof(this.opts.data.url) == 'undefined' || this.opts.data.url == null) {
                 this.render();
+            } else if ($.isFunction(this.opts.data.loader)) {
+                this.opts.data.loader(function (data) {
+                    postProcessor(data);
+                }, function (e) {
+                    _ref.view.trigger('error', {error: e, message: 'Unable to load data', nr: '1000'});
+                });
             } else {
-                var _ref = this;
                 $.getJSON(this.opts.data.url).done(function (data) {
-                    var postProcessedData = $.isFunction(_ref.opts.data.postProcessor) ? _ref.opts.data.postProcessor(data) : data;
-                    if (postProcessedData == null) {
-                        _ref.view.trigger('error', {error: null, message: 'Postprocessing of data failed', nr: '1001'});
-                    } else {
-                        _ref.render(postProcessedData);
-                    }
+                    postProcessor(data);
                 }).fail(function (error) {
                     _ref.view.trigger('error', {error: error, message: 'Unable to load data', nr: '1000'});
                 });
