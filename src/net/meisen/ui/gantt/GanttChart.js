@@ -389,14 +389,14 @@ define(['jquery',
 
             this.view.trigger('load');
 
-            if (typeof(this.opts.data.url) == 'undefined' || this.opts.data.url == null) {
-                this.render();
-            } else if ($.isFunction(this.opts.data.loader)) {
+            if ($.isFunction(this.opts.data.loader)) {
                 this.opts.data.loader(function (data) {
                     postProcessor(data);
                 }, function (e) {
                     _ref.view.trigger('error', {error: e, message: 'Unable to load data', nr: '1000'});
                 });
+            } else if (typeof(this.opts.data.url) == 'undefined' || this.opts.data.url == null) {
+                this.render();
             } else {
                 $.getJSON(this.opts.data.url).done(function (data) {
                     postProcessor(data);

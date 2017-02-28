@@ -206,8 +206,8 @@ var config = {
 ```
 
 Further examples using different `post-processor` and `loader` definitions can be found:
-- a
-- b
+- mapping JSON objects (e.g., [sample-data.json](https://rawgit.com/pmeisen/js-gantt/master/resources/sample-data.json)) to the required data format: [jsFiddle: post-processing](https://jsfiddle.net/pmeisen/pj9thh4z/)
+- using a loader (e.g., loading CSV [sample-data.csv](https://rawgit.com/pmeisen/js-gantt/master/resources/sample-data.csv)) to the required data format: [jsFiddle: loader](https://jsfiddle.net/pmeisen/11z6o8pn/)
 
 ## Configuration
 
