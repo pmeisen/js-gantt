@@ -2,7 +2,7 @@
 [![npm version](http://img.shields.io/npm/v/js-gantt.svg?style=flat)](https://npmjs.org/package/js-gantt "View this project on npm")
 [![Build Status](https://travis-ci.org/pmeisen/js-gantt.svg?branch=master)](https://travis-ci.org/pmeisen/js-gantt)
 
-Library to create easy to configure and use simple Gantt-Charts. The created Gantt-Charts can be used to visualize multiple time-intervals. 
+Library to create Gantt-Charts, easily, simple and highly configurable. The created Gantt-Charts can be used to visualize time-interval-datasets. 
 The rich configuration allows among other things:
 - customizable axes labeling,
 - modifiable sizing for all visual components (i.e., intervals, swim-lanes, chart, axes)
