@@ -388,7 +388,39 @@ The `post-processor` must return an `JSON` fulfilling the following requirements
            'name'
         ]
     ```
-    
+
+So all together, it must return:
+
+```javascript
+    loader: function(success, error) {
+        success({
+            names: [ 
+                'birthday',
+                'dayOfDeath',
+                'type',
+                'alias',
+                'name'
+            ],
+            records: [
+                [ 
+                   GanttChart.DateUtil.createUTC(1929, 10, 31),
+                   GanttChart.DateUtil.createUTC(2016, 6, 27),
+                   'actor',
+                   'Bud Spencer',
+                   'Carlo Pedersoli'
+                ],
+                [ 
+                   GanttChart.DateUtil.createUTC(1939, 3, 29),
+                   null,
+                   'actor',
+                   'Terence Hill',
+                   'Mario Girotti'
+                ]
+            ]
+        })
+    };
+```
+
 The next important setting within the `data` section of the configuration is the `mapper`. The mapper configuration is used to 
 define, which values of each record have what semantic meaning, e.g., which value indicates the `startname` of the interval and which
 one the `endname`. By default, the library assumes that the `startname` is `start` and the `endname` is `end`. Assuming the `names` 
