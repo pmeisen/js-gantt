@@ -211,8 +211,8 @@ Further examples using different `post-processor` and `loader` definitions can b
 
 ## Configuration
 
-The Gantt Chart library provides a rich set of configuration parameters. This paragraph tries to address most of the configurations
-possible. To get an easy start, it is recommend to look at the [Usage Examples](#usage-examples) and adapt the different configuration
+The Gantt Chart library provides a rich set of configuration parameters. This paragraph tries to address the none trivial settings. 
+To get an easy start, it is recommend to look at the [Usage Examples](#usage-examples) and adapt the different configuration
 parameters as needed and described here.
 
 A full configuration (with the default settings) is as follows:
@@ -350,7 +350,73 @@ var config = {
 };
 ```
 
+Most of the configuration parameters should be self explaining (if not please contact me, so that I can enhance the documentation). Nevertheless, one of the 
+most important things to understand is the `data` section within the configuration. Which is explained in the following paragraph.
 
+### Configuration: Data Section
+
+In general, the library tries to retrieve time interval data in the following order (it is not recommended to mix the different 
+ways and only utilize one of the ways to retrieve data):
+
+1. check if a loader is defined (data must be returned as `JSON`)
+2. check if an url is defined (data must be returned as `JSON`)
+3. check if `records` are set
+
+If step 1. or 2. are used, the returned `JSON` is passed to the `post-processor`, if one is defined (`data.postProcessor` must be a `function`).
+The `post-processor` must return an `JSON` fulfilling the following requirements:
+
+1. must be a plain-object (`JSON`)
+2. must have a named `records` attribute, which contains the time-interval data as arrays and each date as UTC-based `Date`, i.e., 
+    ```javascript
+        [ 
+           GanttChart.DateUtil.createUTC(1929, 10, 31, 0, 0, 0),
+           GanttChart.DateUtil.createUTC(2016, 6, 27, 0, 0, 0),
+           'actor',
+           'Bud Spencer',
+           'Carlo Pedersoli'
+        ]
+    ```
+3. must have a named `names` attribute, which returns an array of `names` for the different values in the `records` array, i.e.,
+    ```javascript
+        [ 
+           'birthday',
+           'dayOfDeath',
+           'type',
+           'alias',
+           'name'
+        ]
+    ```
+    
+The next important setting within the `data` section of the configuration is the `mapper`. The mapper configuration is used to 
+define, which values of each record have what semantic meaning, e.g., which value indicates the `startname` of the interval and which
+one the `endname`. By default, the library assumes that the `startname` is `start` and the `endname` is `end`. Assuming the `names` 
+from the previous paragraph, this default setting is incorrect and would need to be modified:
+
+```javascript
+    mapper: {
+        startname: 'birthday',
+        endname: 'dayOfDeath'
+    }
+```
+
+Additional mappers can be defined for `groups`, `labels` and `tooltips`, i.e.,
+
+```javascript
+    mapper: {
+        startname: 'birthday',
+        endname: 'dayOfDeath',
+        group: ['type'],
+        label: ['alias'],
+        tooltip: ['name', 'alias']
+    }
+```
+
+These values are used by the library to, e.g., offer group-based coloring, showing tool-tips on hover events or add a label
+to an interval.
+
+**Notes**: 
+- the `GanttChart` provides some utility functions, which makes it easier to parse (e.g., `parseString`) or create (e.g., `createUTC`) UTC dates.
+- the `end` date can be `null`, which indicates that the interval has not ended yet (glued to the end of the chart).
 
 ## Advanced: Bower and RequireJs
 
