@@ -79,7 +79,7 @@ If you'd like to have this library available through a CDN, please **Star** the 
 Here are some [jsFiddle](https://jsfiddle.net/) examples utilizing the library. All examples are purely based
 on this library, no additional dependencies needed.
 
-### A Simple Example (div-container with spinning circle)
+### A First Example: Showing some sample data
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/pmeisen/js-gantt/master/resources/simple-example.png" alt="Simple Example" width="400">
@@ -97,6 +97,10 @@ This example demonstrates how easy it is to use the library and config some diff
     - scrollbars
     - axis
     - theme (interval size)
+
+### Coloring: 
+
+
 
 ## Configuration
 

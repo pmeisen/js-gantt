@@ -11620,7 +11620,7 @@ define('net/meisen/ui/gantt/svg/Scrollbar',['jquery', 'net/meisen/general/Utilit
             var _ref = this;
 
             this.opts = $.extend(true, {}, this.defaultCfg, cfg);
-console.log(this.opts);
+
             // create a group for the scrollbar
             this.bar = $(document.createElementNS('http://www.w3.org/2000/svg', 'g'));
             this.bar.attr('class', 'gantt-scrollbar-container');
@@ -12063,7 +12063,7 @@ define('net/meisen/ui/gantt/svg/TimeAxis',['jquery', 'net/meisen/general/date/Da
             var tickInterval;
             if (typeof(this.opts.tickInterval) == 'undefined' || this.opts.tickInterval == null) {
                 tickInterval = 1;
-                while ((numberOfGaps = Math.max(1, Math.ceil((size) / tickInterval))) > 20) {
+                while ((numberOfGaps = Math.max(1, Math.ceil((size) / tickInterval))) > 8) {
                     tickInterval++;
                 }
             } else {
@@ -14167,6 +14167,47 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
      * Hidden utilities, only used within the GanttChart.
      */
     var utilities = {
+        createSampleEnd: function (n) {
+            n = typeof n !== n instanceof Date ? n : new Date();
+            return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), 23, 59, 0));
+        },
+
+        createSampleData: function (n, amount) {
+
+            // just some stuff to create some sample time-intervals
+            n = typeof n !== n instanceof Date ? n : new Date();
+            var createDate = function (h, m, s) {
+                return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), h, m, s));
+            };
+            var createRecord = function (h1, m1, s1, h2, m2, s2, label) {
+                return [
+                    createDate(h1, m1, s1), createDate(h2, m2, s2), label
+                ];
+            };
+            var rnd = function (min, max) {
+                return Math.floor(min + Math.random() * (max - min));
+            };
+
+            var result = [];
+            amount = typeof amount === 'number' ? amount : 5;
+            for (var i = 0; i < amount; i++) {
+                var sH = rnd(1, 20);
+                var sM = rnd(1, 59);
+                var sS = rnd(1, 59);
+                var eH = rnd(sH + 1, 23);
+                var eM = rnd(1, 59);
+                var eS = rnd(1, 59);
+
+                var start = sH * 60 * 60 + sM * 60 + sS;
+                var end = eH * 60 * 60 + eM * 60 + eS;
+
+                var duration = end - start;
+
+                result.push(createRecord(sH, sM, sS, eH, eM, eS, duration + ' seconds'));
+            }
+
+            return result;
+        },
         generateMap: function (mapper, names) {
             var group = this.validateArray(mapper.group);
             var label = this.validateArray(mapper.label);
@@ -14395,12 +14436,12 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
                     label: [],
                     tooltip: []
                 },
-                names: [],
-                records: [],
+                names: ['start', 'end'],
+                records: utilities.createSampleData(new Date(), 50),
                 timeaxis: {
                     start: null,
-                    end: null,
-                    granularity: 'days'
+                    end: utilities.createSampleEnd(new Date()),
+                    granularity: 'mi'
                 }
             }
         },
@@ -14584,45 +14625,11 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
         },
 
         createSampleEnd: function (n) {
-            n = typeof n !== n instanceof Date ? n : new Date();
-            return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), 23, 59, 0));
+            return utilities.createSampleEnd(n);
         },
 
         createSampleData: function (n, amount) {
-
-            // just some stuff to create some sample time-intervals
-            n = typeof n !== n instanceof Date ? n : new Date();
-            var createDate = function (h, m, s) {
-                return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), h, m, s));
-            };
-            var createRecord = function (h1, m1, s1, h2, m2, s2, label) {
-                return [
-                    createDate(h1, m1, s1), createDate(h2, m2, s2), label
-                ];
-            };
-            var rnd = function (min, max) {
-                return Math.floor(min + Math.random() * (max - min));
-            };
-
-            var result = [];
-            amount = typeof amount === 'number' ? amount : 5;
-            for (var i = 0; i < amount; i++) {
-                var sH = rnd(1, 20);
-                var sM = rnd(1, 59);
-                var sS = rnd(1, 59);
-                var eH = rnd(sH + 1, 23);
-                var eM = rnd(1, 59);
-                var eS = rnd(1, 59);
-
-                var start = sH * 60 * 60 + sM * 60 + sS;
-                var end = eH * 60 * 60 + eM * 60 + eS;
-
-                var duration = end - start;
-
-                result.push(createRecord(sH, sM, sS, eH, eM, eS, duration + ' seconds'));
-            }
-
-            return result;
+            return utilities.createSampleEnd(n, amount);
         }
     };
 
