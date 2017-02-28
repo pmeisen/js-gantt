@@ -221,6 +221,7 @@ A full configuration (with the default settings) is as follows:
 var config = {
     data: {
         url: null,
+        loader: null,
         postProcessor: function (data) {
             if (!$.isArray(data.names) || !$.isArray(data.records)) {
                 return null;
