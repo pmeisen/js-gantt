@@ -7,8 +7,8 @@ The rich configuration allows among other things:
 - customizable axes labeling,
 - modifiable sizing for all visual components (i.e., intervals, swim-lanes, chart, axes)
 - rule-based coloring,
-- tooltip configuration, 
-- ...
+- tooltip configuration, and
+- many many more.
 
 ## How to Install
 
@@ -85,7 +85,7 @@ on this library, no additional dependencies needed.
 ### A Simple Example (div-container with spinning circle)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/pmeisen/js-gantt/master/resources/simple-example.png" alt="Simple Example" width="886">
+  <img src="https://raw.githubusercontent.com/pmeisen/js-gantt/master/resources/simple-example.png" alt="Simple Example" width="400">
 </p>
 
 https://jsfiddle.net/pmeisen/pfg7t1uw/
