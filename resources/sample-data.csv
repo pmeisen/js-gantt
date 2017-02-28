@@ -1,0 +1,90 @@
+caller;start;end;duration;recipient;origin;destination;ratepermin;costs;origincontinent;destinationcontinent;callergender;recipientgender
+Ben;27.09.2013 02:00:19;27.09.2013 02:44:19;44;Kimi;South Dakota;United Kingdom;0.07;3.08;United States;Europe;Male;Female
+Ben;27.09.2013 02:02:36;27.09.2013 02:07:36;5;Diana;South Dakota;Falkland Islands;0.45;2.25;United States;South America;Male;Female
+Ben;27.09.2013 02:07:40;27.09.2013 02:30:40;23;Diana;South Dakota;Falkland Islands;0.45;10.35;United States;South America;Male;Female
+Leni;27.09.2013 02:11:39;27.09.2013 02:46:39;35;Clemens;Missouri;Namibia;0.79;27.65;United States;Africa;Male;Male
+Max;27.09.2013 02:13:26;27.09.2013 02:41:26;28;Jasmin;Ohio;Mauritius;1.22;34.16;United States;Africa;Male;Female
+Max;27.09.2013 02:14:06;27.09.2013 02:22:06;8;Felina;Ohio;Suriname;1.22;9.76;United States;South America;Male;Female
+Max;27.09.2013 02:14:26;27.09.2013 02:48:26;34;Melinda;Ohio;Taiwan;0.07;2.38;United States;Asia;Male;Female
+Ida;27.09.2013 02:14:47;27.09.2013 02:20:47;6;Sidney;Maine;Mayotte Island;1.00;6.00;United States;Africa;Female;Male
+Ida;27.09.2013 02:14:47;27.09.2013 02:27:47;13;Sidney;Maine;Mayotte Island;1.00;13.00;United States;Africa;Female;Male
+Ida;27.09.2013 02:14:58;27.09.2013 02:56:58;42;Sidney;Maine;Mayotte Island;1.00;42.00;United States;Africa;Female;Male
+Ida;27.09.2013 02:14:58;27.09.2013 03:21:58;67;Sidney;Maine;Mayotte Island;1.00;67.00;United States;Africa;Female;Male
+Ida;27.09.2013 02:15:44;27.09.2013 02:43:44;28;Sidney;Maine;Mayotte Island;1.00;28.00;United States;Africa;Female;Male
+Ida;27.09.2013 02:15:44;27.09.2013 02:24:44;9;Sidney;Maine;Mayotte Island;1.00;9.00;United States;Africa;Female;Male
+Clara;27.09.2013 02:16:07;27.09.2013 02:22:07;6;Malia;Maryland;Monaco;0.14;0.84;United States;Europe;Female;Female
+Jonathan;27.09.2013 02:16:07;27.09.2013 02:22:07;6;Malia;West Virginia;Monaco;0.14;0.84;United States;Europe;Male;Female
+Leni;27.09.2013 02:19:29;27.09.2013 04:08:29;109;Matthias;Missouri;Mali Republic;1.03;112.27;United States;Africa;Male;Male
+Paul;27.09.2013 02:21:34;27.09.2013 02:49:34;28;Jasmin;Montana;Mauritius;1.22;34.16;United States;Africa;Male;Female
+Leni;27.09.2013 02:23:15;27.09.2013 02:47:15;24;Henriette;Missouri;Zimbabwe;0.48;11.52;United States;Africa;Male;Female
+Ben;27.09.2013 02:23:37;27.09.2013 02:37:37;14;Jasmin;South Dakota;Mauritius;1.22;17.08;United States;Africa;Male;Female
+Ben;27.09.2013 02:24:15;27.09.2013 02:43:15;19;Hugo;South Dakota;Zimbabwe;0.48;9.12;United States;Africa;Male;Male
+Ben;27.09.2013 02:25:12;27.09.2013 03:12:12;47;Diana;South Dakota;Falkland Islands;0.45;21.15;United States;South America;Male;Female
+Ben;27.09.2013 02:26:58;27.09.2013 04:15:58;109;Diana;South Dakota;Falkland Islands;0.45;49.05;United States;South America;Male;Female
+Max;27.09.2013 02:31:48;27.09.2013 03:04:48;33;Diana;Ohio;Falkland Islands;0.45;14.85;United States;South America;Male;Female
+Clara;27.09.2013 02:36:52;27.09.2013 03:30:52;54;Jasmin;Maryland;Mauritius;1.22;65.88;United States;Africa;Female;Female
+Jonathan;27.09.2013 02:36:52;27.09.2013 03:30:52;54;Jasmin;West Virginia;Mauritius;1.22;65.88;United States;Africa;Male;Female
+Emma;27.09.2013 02:37:56;27.09.2013 02:38:56;1;Jasmin;New Jersey;Mauritius;1.22;1.22;United States;Africa;Female;Female
+Clara;27.09.2013 02:38:38;27.09.2013 03:32:38;54;Jordan;Maryland;Bosnia;0.34;18.36;United States;Europe;Female;Male
+Jonathan;27.09.2013 02:38:38;27.09.2013 04:31:38;113;Diana;West Virginia;Falkland Islands;0.45;50.85;United States;South America;Male;Female
+Paul;27.09.2013 02:38:50;27.09.2013 02:53:50;15;Frauke;Montana;French Antilles;0.62;9.30;United States;South America;Male;Female
+Emma;27.09.2013 02:38:50;27.09.2013 02:50:50;12;Jasmin;New Jersey;Mauritius;1.22;14.64;United States;Africa;Female;Female
+Emma;27.09.2013 02:39:26;27.09.2013 03:05:26;26;Jasmin;New Jersey;Mauritius;1.22;31.72;United States;Africa;Female;Female
+Ida;27.09.2013 02:39:49;27.09.2013 03:39:49;60;Jayden;Maine;Kiribati;1.16;69.60;United States;Oceania;Female;Male
+Paul;27.09.2013 02:40:06;27.09.2013 03:44:06;64;Frauke;Montana;French Antilles;0.62;39.68;United States;South America;Male;Female
+Clara;27.09.2013 02:42:13;27.09.2013 02:48:13;6;Jordan;Maryland;Bosnia;0.34;2.04;United States;Europe;Female;Male
+Jonathan;27.09.2013 02:42:13;27.09.2013 04:14:13;92;Diana;West Virginia;Falkland Islands;0.45;41.40;United States;South America;Male;Female
+Ida;27.09.2013 02:47:35;27.09.2013 03:54:35;67;Ylvi;Maine;Anguilla;0.57;38.19;United States;South America;Female;Female
+Ida;27.09.2013 02:47:35;27.09.2013 04:23:35;96;Ylvi;Maine;Anguilla;0.57;54.72;United States;South America;Female;Female
+Leni;27.09.2013 02:49:37;27.09.2013 04:19:37;90;Henriette;Missouri;Zimbabwe;0.48;43.20;United States;Africa;Male;Female
+Leni;27.09.2013 02:51:42;27.09.2013 04:14:42;83;Anni;Missouri;Cayman Islands;0.24;19.92;United States;Oceania;Male;Female
+Emma;27.09.2013 02:53:54;27.09.2013 04:14:54;81;Diana;New Jersey;Falkland Islands;0.45;36.45;United States;South America;Female;Female
+Clara;27.09.2013 02:59:43;27.09.2013 04:02:43;63;Jordan;Maryland;Bosnia;0.34;21.42;United States;Europe;Female;Male
+Jonathan;27.09.2013 02:59:43;27.09.2013 04:02:43;63;Diana;West Virginia;Falkland Islands;0.45;28.35;United States;South America;Male;Female
+Paul;27.09.2013 03:07:57;27.09.2013 03:27:57;20;Patrick;Montana;Colombia;0.19;3.80;United States;South America;Male;Male
+Paul;27.09.2013 03:08:45;27.09.2013 03:45:45;37;Frauke;Montana;French Antilles;0.62;22.94;United States;South America;Male;Female
+Clara;27.09.2013 03:11:50;27.09.2013 04:50:50;99;Jordan;Maryland;Bosnia;0.34;33.66;United States;Europe;Female;Male
+Jonathan;27.09.2013 03:11:50;27.09.2013 04:50:50;99;Diana;West Virginia;Falkland Islands;0.45;44.55;United States;South America;Male;Female
+Paul;27.09.2013 03:16:09;27.09.2013 03:45:09;29;Elif;Montana;Burundi;1.39;40.31;United States;Africa;Male;Female
+Ben;27.09.2013 03:16:17;27.09.2013 04:09:17;53;Talea;South Dakota;Denmark;0.08;4.24;United States;Europe;Male;Female
+Paul;27.09.2013 03:47:32;27.09.2013 04:11:32;24;Stina;Montana;Mexico;0.07;1.68;United States;North America;Male;Female
+Ben;27.09.2013 05:08:06;27.09.2013 06:28:06;80;Hugo;South Dakota;Zimbabwe;0.48;38.40;United States;Africa;Male;Male
+Ben;27.09.2013 05:24:38;27.09.2013 05:35:38;11;Diana;South Dakota;Falkland Islands;0.45;4.95;United States;South America;Male;Female
+Ben;27.09.2013 11:41:36;27.09.2013 12:17:36;36;Diana;South Dakota;Falkland Islands;0.45;16.20;United States;South America;Male;Female
+Ben;27.09.2013 11:44:26;27.09.2013 12:17:26;33;Diana;South Dakota;Falkland Islands;0.45;14.85;United States;South America;Male;Female
+Ben;27.09.2013 11:46:02;27.09.2013 12:00:02;14;Diana;South Dakota;Falkland Islands;0.45;6.30;United States;South America;Male;Female
+Leni;27.09.2013 13:35:27;27.09.2013 13:58:27;23;Medina;Missouri;Hong Kong;0.09;2.07;United States;Asia;Male;Female
+Ida;27.09.2013 13:37:29;27.09.2013 14:09:29;32;Valentin;Maine;Pakistan;0.36;11.52;United States;Asia;Female;Male
+Ida;27.09.2013 13:37:29;27.09.2013 14:53:29;76;Valentin;Maine;Pakistan;0.36;27.36;United States;Asia;Female;Male
+Leni;27.09.2013 13:44:47;27.09.2013 13:59:47;15;Medina;Missouri;Hong Kong;0.09;1.35;United States;Asia;Male;Female
+Leni;27.09.2013 13:58:06;27.09.2013 14:50:06;52;Christopher;Missouri;Germany;0.07;3.64;United States;Europe;Male;Male
+Clara;27.09.2013 14:06:40;27.09.2013 14:53:40;47;Jordan;Maryland;Bosnia;0.34;15.98;United States;Europe;Female;Male
+Jonathan;27.09.2013 14:06:40;27.09.2013 14:53:40;47;Diana;West Virginia;Falkland Islands;0.45;21.15;United States;South America;Male;Female
+Leni;27.09.2013 14:08:34;27.09.2013 14:55:34;47;Christopher;Missouri;Germany;0.07;3.29;United States;Europe;Male;Male
+Leni;27.09.2013 14:08:42;27.09.2013 14:33:42;25;Medina;Missouri;Hong Kong;0.09;2.25;United States;Asia;Male;Female
+Leni;27.09.2013 14:13:24;27.09.2013 14:44:24;31;Medina;Missouri;Hong Kong;0.09;2.79;United States;Asia;Male;Female
+Leni;27.09.2013 14:15:51;27.09.2013 14:25:51;10;Diana;Missouri;Falkland Islands;0.45;4.50;United States;South America;Male;Female
+Clara;27.09.2013 15:16:24;27.09.2013 17:00:24;104;Jordan;Maryland;Bosnia;0.34;35.36;United States;Europe;Female;Male
+Jonathan;27.09.2013 15:16:24;27.09.2013 15:36:24;20;Diana;West Virginia;Falkland Islands;0.45;9.00;United States;South America;Male;Female
+Ben;27.09.2013 16:45:27;27.09.2013 17:16:27;31;Diana;South Dakota;Falkland Islands;0.45;13.95;United States;South America;Male;Female
+Leni;27.09.2013 16:56:35;27.09.2013 17:04:35;8;Medina;Missouri;Hong Kong;0.09;0.72;United States;Asia;Male;Female
+Leni;27.09.2013 16:57:51;27.09.2013 17:04:51;7;Medina;Missouri;Hong Kong;0.09;0.63;United States;Asia;Male;Female
+Leni;27.09.2013 17:17:28;27.09.2013 18:54:28;97;Medina;Missouri;Hong Kong;0.09;8.73;United States;Asia;Male;Female
+Clara;27.09.2013 17:27:58;27.09.2013 18:07:58;40;Jordan;Maryland;Bosnia;0.34;13.60;United States;Europe;Female;Male
+Jonathan;27.09.2013 17:27:58;27.09.2013 19:18:58;111;Diana;West Virginia;Falkland Islands;0.45;49.95;United States;South America;Male;Female
+Leni;27.09.2013 17:48:25;27.09.2013 18:18:25;30;Diana;Missouri;Falkland Islands;0.45;13.50;United States;South America;Male;Female
+Ben;27.09.2013 18:59:24;27.09.2013 19:57:24;58;Adelina;South Dakota;Mauritania;0.98;56.84;United States;Africa;Male;Female
+Leni;27.09.2013 19:01:19;27.09.2013 19:07:19;6;Medina;Missouri;Hong Kong;0.09;0.54;United States;Asia;Male;Female
+Leni;27.09.2013 19:01:31;27.09.2013 19:34:31;33;Medina;Missouri;Hong Kong;0.09;2.97;United States;Asia;Male;Female
+Max;27.09.2013 19:14:35;27.09.2013 19:52:35;38;Diana;Ohio;Falkland Islands;0.45;17.10;United States;South America;Male;Female
+Ida;27.09.2013 19:51:48;27.09.2013 20:36:48;45;Soraya;Maine;Algeria;0.48;21.60;United States;Africa;Female;Female
+Ida;27.09.2013 19:51:48;27.09.2013 21:04:48;73;Soraya;Maine;Algeria;0.48;35.04;United States;Africa;Female;Female
+Ida;27.09.2013 20:18:09;27.09.2013 20:21:09;3;Elaine;Maine;Laos;2.39;7.17;United States;Asia;Female;Female
+Ida;27.09.2013 20:18:09;27.09.2013 21:30:09;72;Elaine;Maine;Laos;2.39;172.08;United States;Asia;Female;Female
+Emma;27.09.2013 20:37:51;27.09.2013 21:20:51;43;Diana;New Jersey;Falkland Islands;0.45;19.35;United States;South America;Female;Female
+Emma;27.09.2013 21:20:14;27.09.2013 23:15:14;115;Diana;New Jersey;Falkland Islands;0.45;51.75;United States;South America;Female;Female
+Leni;27.09.2013 21:22:15;27.09.2013 21:29:15;7;Medina;Missouri;Hong Kong;0.09;0.63;United States;Asia;Male;Female
+Leni;27.09.2013 21:22:29;27.09.2013 21:27:29;5;Medina;Missouri;Hong Kong;0.09;0.45;United States;Asia;Male;Female
+Clara;27.09.2013 21:48:50;27.09.2013 21:57:50;9;Jordan;Maryland;Bosnia;0.34;3.06;United States;Europe;Female;Male
+Jonathan;27.09.2013 21:48:50;27.09.2013 22:23:50;35;Diana;West Virginia;Falkland Islands;0.45;15.75;United States;South America;Male;Female
+Leni;27.09.2013 23:47:49;28.09.2013 00:16:49;29;Anthony;Missouri;Portugal;0.09;2.61;United States;Europe;Male;Male

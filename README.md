@@ -110,7 +110,7 @@ This example demonstrates how easy it is to use the library and config some diff
 https://jsfiddle.net/pmeisen/sL7dckbs/
 
 The example shows how to use the `colorizer` to specify rule-based colors for the intervals. You simple have to override the default-configuration
-of the `colorizer`, which is done in the example (see [Configuration](#Configuration) for further information):
+of the `colorizer`, which is done in the example (see [Configuration](#configuration) for further information):
 
 ```javascript
 var config = {
@@ -139,6 +139,16 @@ var config = {
     }
 };
 ```
+
+### External DataSource: Example on how to use an external data-source
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pmeisen/js-gantt/master/resources/color-example.png" alt="Coloring Example" width="400">
+</p>
+
+https://jsfiddle.net/pmeisen/sL7dckbs/
+
+Most 
 
 ## Configuration
 
