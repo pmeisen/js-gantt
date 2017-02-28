@@ -295,6 +295,7 @@ define(['jquery',
             console.log(this.defaultCfg);
             console.log(cfg);
             this.opts = $.extend(true, {}, this.defaultCfg, cfg);
+            console.log(this.opts);
 
             selector = selector instanceof $ ? selector : $(selector);
             selector.children('.ganttchart').remove();
