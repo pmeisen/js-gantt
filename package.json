@@ -1,6 +1,6 @@
 {
   "name": "js-gantt",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "JavaScript Gantt-Chart Library",
   "authors": [
     "Philipp Meisen <philipp@meisen.net>"
@@ -8,11 +8,11 @@
   "scripts": {
     "test": "grunt 02-compile-sources"
   },
-  "main": "dist/js-svglibrary.js",
+  "main": "dist/js-gantt.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pmeisen/js-svglibrary",
-    "bump": "git://github.com/pmeisen/js-svglibrary.git"
+    "url": "https://github.com/pmeisen/js-gantt",
+    "bump": "git://github.com/pmeisen/js-gantt.git"
   },
   "keywords": [
     "gantt",
