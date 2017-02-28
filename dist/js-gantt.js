@@ -11767,7 +11767,6 @@ console.log(this.opts);
         },
 
         isVisible: function () {
-            console.log('hideOn', this.opts.hideOnNoScroll);
             return !this.opts.hideOnNoScroll || this.isScrollable();
         },
 
@@ -14584,6 +14583,11 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
             }
         },
 
+        createSampleEnd: function (n) {
+            n = typeof n !== n instanceof Date ? n : new Date();
+            return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), 23, 59, 0));
+        },
+
         createSampleData: function (n, amount) {
 
             // just some stuff to create some sample time-intervals
@@ -14596,7 +14600,7 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
                     createDate(h1, m1, s1), createDate(h2, m2, s2), label
                 ];
             };
-            var rnd = function(min, max) {
+            var rnd = function (min, max) {
                 return Math.floor(min + Math.random() * (max - min));
             };
 

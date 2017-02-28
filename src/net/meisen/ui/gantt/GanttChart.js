@@ -428,6 +428,11 @@ define(['jquery',
             }
         },
 
+        createSampleEnd: function (n) {
+            n = typeof n !== n instanceof Date ? n : new Date();
+            return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), 23, 59, 0));
+        },
+
         createSampleData: function (n, amount) {
 
             // just some stuff to create some sample time-intervals
@@ -440,7 +445,7 @@ define(['jquery',
                     createDate(h1, m1, s1), createDate(h2, m2, s2), label
                 ];
             };
-            var rnd = function(min, max) {
+            var rnd = function (min, max) {
                 return Math.floor(min + Math.random() * (max - min));
             };
 
