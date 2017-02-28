@@ -109,7 +109,36 @@ This example demonstrates how easy it is to use the library and config some diff
 
 https://jsfiddle.net/pmeisen/sL7dckbs/
 
-The example shows how to use the `colorizer` to specify rule-based colors for the intervals. 
+The example shows how to use the `colorizer` to specify rule-based colors for the intervals. You simple have to override the default-configuration
+of the `colorizer`, which is done in the example (see [Configuration](#Configuration) for further information):
+
+```javascript
+var config = {
+	illustrator: {
+		config: {
+			view: {
+      	        coloring: {
+        	        colorizer: function (interval, map, defaultColor) {
+                        var record = interval.get(IntervalView.gRawAttr);
+                        var value = map.val('label', record);
+                        var n = parseInt(value);
+                      
+                        if (n > 0 && n <= 25000) {
+                            return '#7E8F7C';
+                        } else if (n > 25000 && n <= 50000) {
+                            return '#3B3738';
+                        } else if (n > 50000 && n <= 90000) {
+                            return '#C63D0F';
+                        } else {
+                            return defaultColor;
+                        }
+                    }
+                }
+			}
+		}
+    }
+};
+```
 
 ## Configuration
 
