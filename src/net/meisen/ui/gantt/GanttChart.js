@@ -35,7 +35,7 @@ define(['jquery',
                     }
 
                     for (var i = 0; i < names.length; i++) {
-                       if (names[i] == name) {
+                       if (names[i] === name) {
                            return record[i];
                        }
                     }

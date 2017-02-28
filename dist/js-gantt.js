@@ -14185,15 +14185,15 @@ define('net/meisen/ui/gantt/GanttChart',['jquery',
                 tooltip: mappedTooltip,
 
                 val: function(name, record) {
-                    if (record == null || $.isArray(record) || record.length == 0) {
+                    if (record == null || !$.isArray(record) || record.length == 0) {
                         return;
                     }
 
-                    $.each(names, function (idx, n) {
-                       if (n == name) {
-                           return record[idx];
+                    for (var i = 0; i < names.length; i++) {
+                       if (names[i] === name) {
+                           return record[i];
                        }
-                    });
+                    }
                 },
 
                 get: function (type, record) {
