@@ -1,4 +1,5 @@
 # js-gantt
+[![Bower version](https://badge.fury.io/bo/js-gantt.svg)](https://badge.fury.io/bo/js-gantt)
 [![npm version](http://img.shields.io/npm/v/js-gantt.svg?style=flat)](https://npmjs.org/package/js-gantt "View this project on npm")
 [![Build Status](https://travis-ci.org/pmeisen/js-gantt.svg?branch=master)](https://travis-ci.org/pmeisen/js-gantt)
 
