@@ -367,6 +367,7 @@ The `post-processor` must return an `JSON` fulfilling the following requirements
 
 1. must be a plain-object (`JSON`)
 2. must have a named `records` attribute, which contains the time-interval data as arrays and each date as UTC-based `Date`, i.e., 
+
     ```javascript
         [ 
            GanttChart.DateUtil.createUTC(1929, 10, 31, 0, 0, 0),
@@ -377,6 +378,7 @@ The `post-processor` must return an `JSON` fulfilling the following requirements
         ]
     ```
 3. must have a named `names` attribute, which returns an array of `names` for the different values in the `records` array, i.e.,
+
     ```javascript
         [ 
            'birthday',
