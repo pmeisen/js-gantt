@@ -83,7 +83,7 @@ If you'd like to have this library available through a CDN, please **Star** the 
 Here are some [jsFiddle](https://jsfiddle.net/) examples utilizing the library. All examples are purely based
 on this library, no additional dependencies needed.
 
-### A First Example: Showing some sample data
+### A First Example: Showing some sample time intervals
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/pmeisen/js-gantt/master/resources/simple-example.png" alt="Simple Example" width="400">
@@ -102,7 +102,7 @@ This example demonstrates how easy it is to use the library and config some diff
     - axis
     - theme (interval size)
 
-### Rule-based Coloring: Example on how to utilize coloring
+### Rule-based Coloring: Example on how to utilize rule-based coloring for time intervals
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/pmeisen/js-gantt/master/resources/color-example.png" alt="Coloring Example" width="400">
