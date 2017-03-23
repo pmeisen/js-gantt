@@ -196,7 +196,7 @@ must be implemented as:
 
 ```
 var config = {
-	data: {
+    data: {
         postProcessor: function (success, error) {
             // success and error are both function, with:
             // - success: function(data);
