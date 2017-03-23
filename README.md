@@ -314,13 +314,13 @@ var config = {
             },
             axis: {
                 tickInterval: null,
+                viewSize: null,
+                padding: 100,
                 formatter: function (value, type, level) {
                     // there is a default formatter, please have 
                     // a look at the source-code (TimeAxis.js)
                     // for furhter insights
                 },
-                viewSize: null,
-                padding: 100,
                 theme: {
                     tickColor: '#C0D0E0',
                     tickWidth: 1,
