@@ -313,8 +313,20 @@ var config = {
                 }
             },
             axis: {
+                tickInterval: null,
+                formatter: function (value, type, level) {
+                    // there is a default formatter, please have 
+                    // a look at the source-code (TimeAxis.js)
+                    // for furhter insights
+                },
                 viewSize: null,
-                padding: 100
+                padding: 100,
+                theme: {
+                    tickColor: '#C0D0E0',
+                    tickWidth: 1,
+                    labelColor: '#606060',
+                    labelSize: 11
+                }
             },
             scrollbars: {
                 vertical: {
