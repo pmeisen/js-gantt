@@ -6,6 +6,7 @@
     "Philipp Meisen <philipp@meisen.net>"
   ],
   "main": "dist/js-gantt.js",
+  "homepage": "https://github.com/pmeisen/js-gantt",
   "repository": {
     "type": "git",
     "url": "https://github.com/pmeisen/js-gantt",
