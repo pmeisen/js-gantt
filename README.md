@@ -115,28 +115,28 @@ of the `colorizer`, which is done in the example (see [Configuration](#configura
 
 ```javascript
 var config = {
-	illustrator: {
-		config: {
-			view: {
-				coloring: {
-					colorizer: function (interval, map, defaultColor) {
-					var record = interval.get(IntervalView.gRawAttr);
-					var value = map.val('label', record);
-					var n = parseInt(value);
+    illustrator: {
+        config: {
+            view: {
+                coloring: {
+                    colorizer: function (interval, map, defaultColor) {
+                        var record = interval.get(IntervalView.gRawAttr);
+                        var value = map.val('label', record);
+                        var n = parseInt(value);
 
-					if (n > 0 && n <= 25000) {
-					    return '#7E8F7C';
-					} else if (n > 25000 && n <= 50000) {
-					    return '#3B3738';
-					} else if (n > 50000 && n <= 90000) {
-					    return '#C63D0F';
-					} else {
-					    return defaultColor;
-					}
-				    }
-				}
-			}
-		}
+                        if (n > 0 && n <= 25000) {
+                            return '#7E8F7C';
+                        } else if (n > 25000 && n <= 50000) {
+                            return '#3B3738';
+                        } else if (n > 50000 && n <= 90000) {
+                            return '#C63D0F';
+                        } else {
+                            return defaultColor;
+                        }
+                    }
+                }
+            }
+        }
     }
 };
 ```
@@ -165,7 +165,7 @@ allows you to post-process `JSON` data, e.g., retrieved from a web-service. In t
 
 ```javascript
 var config = {
-	data: {
+    data: {
         postProcessor: function (data) {
             var f = 'dd.MM.yyyy HH:mm:ss';
             for (var i = 0; i < data.length; i++) {
