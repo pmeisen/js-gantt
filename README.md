@@ -118,23 +118,23 @@ var config = {
 	illustrator: {
 		config: {
 			view: {
-      	        coloring: {
-        	        colorizer: function (interval, map, defaultColor) {
-                        var record = interval.get(IntervalView.gRawAttr);
-                        var value = map.val('label', record);
-                        var n = parseInt(value);
-                      
-                        if (n > 0 && n <= 25000) {
-                            return '#7E8F7C';
-                        } else if (n > 25000 && n <= 50000) {
-                            return '#3B3738';
-                        } else if (n > 50000 && n <= 90000) {
-                            return '#C63D0F';
-                        } else {
-                            return defaultColor;
-                        }
-                    }
-                }
+				coloring: {
+					colorizer: function (interval, map, defaultColor) {
+					var record = interval.get(IntervalView.gRawAttr);
+					var value = map.val('label', record);
+					var n = parseInt(value);
+
+					if (n > 0 && n <= 25000) {
+					    return '#7E8F7C';
+					} else if (n > 25000 && n <= 50000) {
+					    return '#3B3738';
+					} else if (n > 50000 && n <= 90000) {
+					    return '#C63D0F';
+					} else {
+					    return defaultColor;
+					}
+				    }
+				}
 			}
 		}
     }
