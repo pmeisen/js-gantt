@@ -187,9 +187,8 @@ var config = {
 };
 ```
 
-The post-processor expects an `object` defining the `names` and `records`. The `names` are an array naming the different
-values of each record. It can be understood as the header of a CSV-file. In the records, the named values representing the
-start and end value of the interval, must be a `Date`.
+The library needs an `object` defining the `names` and `records`, i.e., `{ names: [], records: [] }`. Thus, the `postProcessor` function must return such an object. The `names` are an array naming the different
+values of each record; it can be understood as the header of a CSV-file. The records contain the actual data, which have to ensure, that the values representing the start and end value of the interval, must be a `Date` type.
 
 If the returned data is not a `JSON`, the library offers a `loader` configuration, which defines how to load data. The loader 
 must be implemented as:
@@ -197,7 +196,7 @@ must be implemented as:
 ```
 var config = {
     data: {
-        postProcessor: function (success, error) {
+        loader: function (success, error) {
             // success and error are both functions, with:
             // - success: function(data);
             // - error:   function(msg);
