@@ -160,7 +160,7 @@ Most often an external data source is used to visualize data. The library expect
  ```
 
 There are several good online tools to convert different formats into a JSON data form, e.g., for CSV [convertcsv.com](http://www.convertcsv.com/csv-to-json.htm).
-Nevertheless, sometimes the data that you receive, e.g., from an url is not in JSON form. For that scenario, the library's provides a configuration, which 
+Nevertheless, sometimes the data that you receive, e.g., from an url, is not in JSON form. To solve this problem, the library provides a configuration, which 
 allows you to post-process `JSON` data, e.g., retrieved from a web-service. In the jsFiddle, the loaded data is `post-processed` via the following `function`:
 
 ```javascript
