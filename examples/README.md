@@ -7,12 +7,12 @@ This folder contains examples created to illustrate some of the possibilities.
 
 ### Creating SVG from nodeJS (exportSvgWithNodeJs)
 
-Yes it is possible to create Gantt-Charts, i.e.,
-SVG files (and also convert these to, e.g., PNG) within nodeJS. I personally
-only use the library within a browser, so the example just shows what may be
-possible. The examples utilizes *phantomJs* to render the SVG in the headless
-browser, retrieves the created SVG and stores it in a file. There are some
-things to be considered to make this example more usable:
+Yes it is possible to create Gantt-Charts, i.e., SVG files (and also convert
+these to, e.g., PNG) within nodeJS (see [here](exportSvgWithNodeJs/example.js)).
+I personally only use the library within a browser, so the example just shows
+what may be possible. The examples utilizes *phantomJs* to render the SVG in
+the headless browser, retrieves the created SVG and stores it in a file. There
+are some things to be considered to make this example more usable:
 
 1. It may be nicer to push the options, as well as the width and height
    through nodeJs into the JavaScript. Currently the *options* are also
@@ -26,7 +26,7 @@ things to be considered to make this example more usable:
    just waits a couple of seconds. In a nicer version, nodeJs would utilize
    the events provided by the library.
 
-To test the example, simply check out the `examples` folder. Change to
-`exportSvgWithNodeJs` and run `npm install` (just once to get the dependencies)
+To test the example, simply check out the [examples](./) folder. Change to
+[exportSvgWithNodeJs](./exportSvgWithNodeJs) and run `npm install` (just once to get the dependencies)
 and afterwards `npm start`. After the script is executed, there should be
 a `ouput` folder, which contains a `sample.svg`.
