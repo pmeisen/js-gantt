@@ -1,0 +1,17 @@
+{
+  "name": "js-gantt-export-svg-example",
+  "version": "1.0.0",
+  "description": "This is an example showing how to use nodeJs and js-gantt to export a Gantt-Chart to SVG.",
+  "main": "example.js",
+  "scripts": {
+    "start": "node example.js"
+  },
+  "authors": [
+    "Philipp Meisen <philipp@meisen.net>"
+  ],
+  "private": false,
+  "license": "MIT",
+  "dependencies": {
+    "phantom": "^3.2.1"
+  }
+}
