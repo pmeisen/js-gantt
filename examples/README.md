@@ -5,7 +5,7 @@
 
 This folder contains examples created to illustrate some of the possibilities.
 
-### Creating SVG from nodeJS
+### Creating SVG from nodeJS (exportSvgWithNodeJs)
 
 Yes it is possible to create Gantt-Charts, i.e.,
 SVG files (and also convert these to, e.g., PNG) within nodeJS. I personally
@@ -25,3 +25,8 @@ things to be considered to make this example more usable:
    when the rendering is finished. Nevertheless, in the example the script
    just waits a couple of seconds. In a nicer version, nodeJs would utilize
    the events provided by the library.
+
+To test the example, simply check out the `examples` folder. Change to
+`exportSvgWithNodeJs` and run `npm install` (just once to get the dependencies)
+and afterwards `npm start`. After the script is executed, there should be
+a `ouput` folder, which contains a `sample.svg`.
