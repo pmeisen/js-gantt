@@ -276,7 +276,7 @@ var config = {
                     colorizer: function (interval, map, defaultColor) {
                         // there is a default implemented, please have 
                         // a look at the source-code (IntervalView.js)
-                        // for furhter insights
+                        // for further insights
                     }
                 },
                 tooltip: null,
@@ -284,7 +284,7 @@ var config = {
                     tooltip: function (interval, map, textFormat, theme) {
                         // there is a default implemented, please have 
                         // a look at the source-code (IntervalView.js)
-                        // for furhter insights
+                        // for further insights
                     }
                 },
                 theme: {
@@ -318,7 +318,7 @@ var config = {
                 formatter: function (value, type, level) {
                     // there is a default formatter, please have 
                     // a look at the source-code (TimeAxis.js)
-                    // for furhter insights
+                    // for further insights
                 },
                 theme: {
                     tickColor: '#C0D0E0',
